@@ -17,30 +17,18 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        // \App\Models\User::factory(10)->create();
-
-        User::factory()->create([
+        $user = User::factory()->create([
             'name' => 'admin',
             'username' => 'admin',
             'password' => bcrypt('password')
         ]);
 
-        Role::create([
-            'name' => 'admin',
-        ]);
+        $roles = ['admin', 'receptionist', 'cashier', 'pharmacist'];
 
-        Role::create([
-            'name' => 'receptionist',
-        ]);
+        $roles = array_map(fn ($role) => Role::create(['name' => $role]), $roles);
 
-        Role::create([
-            'name' => 'cashier',
-        ]);
-
-        Role::create([
-            'name' => 'pharmacist',
-        ]);
-
-        Role::all()->each(fn ($role) => $role->users()->attach(1));
+        collect($roles)->each(function ($role) use ($user) {
+            $role->users()->attach($user->id);
+        });
     }
 }
