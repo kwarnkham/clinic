@@ -22,5 +22,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::controller(AdminController::class)->prefix('/admin')->group(function () {
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('users', 'createUser');
+        Route::post('users/{user}/role', 'assignRole');
+        Route::delete('users/{user}/role', 'removeRole');
     });
 });

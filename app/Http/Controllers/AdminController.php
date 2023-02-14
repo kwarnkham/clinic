@@ -25,4 +25,30 @@ class AdminController extends Controller
             'user' => $user,
         ], ResponseStatus::CREATED->value);
     }
+
+    public function assignRole(Request $request, User $user)
+    {
+        $data = $request->validate([
+            'role_id' => ['exists:roles,id']
+        ]);
+
+        $user->roles()->attach($data['role_id']);
+
+        return response()->json([
+            'user' => $user->load(['roles'])
+        ]);
+    }
+
+    public function removeRole(Request $request, User $user)
+    {
+        $data = $request->validate([
+            'role_id' => ['exists:roles,id']
+        ]);
+
+        $user->roles()->detach($data['role_id']);
+
+        return response()->json([
+            'user' => $user->load(['roles'])
+        ]);
+    }
 }
