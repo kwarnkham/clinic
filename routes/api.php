@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ItemController;
 use App\Http\Controllers\ReceptionistController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -21,15 +22,21 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::controller(AdminController::class)->prefix('/admin')->group(function () {
-    Route::middleware(['auth:sanctum'])->group(function () {
+    Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
         Route::post('users', 'createUser');
         Route::post('users/{user}/role', 'assignRole');
         Route::delete('users/{user}/role', 'removeRole');
     });
 });
 
+Route::controller(ItemController::class)->prefix('/items')->group(function () {
+    Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+        Route::post('', 'store');
+    });
+});
+
 Route::controller(ReceptionistController::class)->prefix('/receptionist')->group(function () {
-    Route::middleware(['auth:sanctum'])->group(function () {
+    Route::middleware(['auth:sanctum', 'role:receptionist'])->group(function () {
         Route::post('patients', 'registerPatient');
     });
 });

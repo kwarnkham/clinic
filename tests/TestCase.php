@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use App\Enums\RoleName;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -22,13 +23,13 @@ abstract class TestCase extends BaseTestCase
         $this->admin = User::first();
         $recepitonist = User::factory()->create();
         $recepitonist->roles()->attach(
-            Role::where('name', 'recepitonist')->first()
+            Role::where('name', RoleName::RECEPTIONIST->value)->first()
         );
         $this->recepitonist = $recepitonist;
 
         $cashier = User::factory()->create();
         $cashier->roles()->attach(
-            Role::where('name', 'cashier')->first()
+            Role::where('name', RoleName::CASHIER->value)->first()
         );
         $this->cashier = $cashier;
     }
