@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ItemController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReceptionistController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +31,12 @@ Route::controller(AdminController::class)->prefix('/admin')->group(function () {
 });
 
 Route::controller(ItemController::class)->prefix('/items')->group(function () {
+    Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+        Route::post('', 'store');
+    });
+});
+
+Route::controller(ProductController::class)->prefix('/products')->group(function () {
     Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
         Route::post('', 'store');
     });
