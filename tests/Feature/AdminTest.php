@@ -25,7 +25,13 @@ class AdminTest extends TestCase
         });
 
         $this->assertDatabaseCount('users', $roles->count() + $existedUsers);
-        $this->assertDatabaseCount('role_user', $roles->count() + $this->admin->roles->count() + $this->recepitonist->roles->count());
+        $this->assertDatabaseCount(
+            'role_user',
+            $roles->count() +
+                $this->admin->roles->count() +
+                $this->recepitonist->roles->count() +
+                $this->cashier->roles->count()
+        );
     }
 
     public function test_assign_a_role_to_a_user()
