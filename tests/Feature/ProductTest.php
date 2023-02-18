@@ -18,5 +18,7 @@ class ProductTest extends TestCase
         $response->assertCreated();
         $this->assertDatabaseCount('products', 1);
         $this->assertDatabaseHas('products', $productData->toArray());
+        $this->assertEquals($response->json()['product']['stock'], 0);
+        $this->assertNull($response->json()['product']['last_purchase_price']);
     }
 }

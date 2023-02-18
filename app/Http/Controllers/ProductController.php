@@ -19,7 +19,7 @@ class ProductController extends Controller
         ]);
         $product = Product::create($data);
         return response()->json([
-            'product' => $product
+            'product' => $product->fresh()
         ], ResponseStatus::CREATED->value);
     }
 }
