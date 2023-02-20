@@ -41,4 +41,14 @@ class Product extends Model
     {
         return $this->sale_price >= $discount;
     }
+
+    public function populate(array $productData): array
+    {
+        $productData['name'] = $this->name;
+        $productData['description'] = $this->description;
+        $productData['sale_price'] = $this->sale_price;
+        $productData['last_purchase_price'] = $this->last_purchase_price;
+        $productData['stock'] = $this->stock;
+        return $productData;
+    }
 }

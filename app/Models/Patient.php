@@ -27,4 +27,9 @@ class Patient extends Model
         }
         return 'CPI' . substr($year, 2) . $code;
     }
+
+    public function visits()
+    {
+        return $this->hasMany(Visit::class);
+    }
 }
