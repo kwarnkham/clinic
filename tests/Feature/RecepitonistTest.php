@@ -22,4 +22,12 @@ class RecepitonistTest extends TestCase
         $this->assertDatabaseCount('patients', 1);
         $this->assertDatabaseHas('patients', $patientData->toArray());
     }
+
+    public function test_registering_a_patinet_also_record_a_visit()
+    {
+        $patientData = Patient::factory()->make();
+        $response = $this->actingAs($this->recepitonist)->postJson('api/receptionist/patients', $patientData->toArray());
+        $response->assertCreated();
+        $this->assertDatabaseCount('visits', 1);
+    }
 }
