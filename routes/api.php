@@ -70,5 +70,6 @@ Route::controller(VisitController::class)->prefix('/visits')->group(function () 
         Route::middleware(['role:receptionist'])->group(function () {
             Route::post('', 'store');
         });
+        Route::get('', 'index');
     });
 });

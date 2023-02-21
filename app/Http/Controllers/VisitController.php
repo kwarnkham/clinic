@@ -12,6 +12,11 @@ use Illuminate\Support\Facades\DB;
 
 class VisitController extends Controller
 {
+    public function index()
+    {
+        return response()->json(Visit::query()->paginate());
+    }
+
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([

@@ -123,4 +123,9 @@ class VisitTest extends TestCase
         $response->assertOk();
         $this->assertEquals($visit->fresh()->status, VisitStatus::CANCELED->value);
     }
+
+    public function test_list_visits()
+    {
+        $this->actingAs($this->admin)->getJson('api/visits')->assertOk();
+    }
 }
