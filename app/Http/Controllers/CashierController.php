@@ -52,6 +52,8 @@ class CashierController extends Controller
             foreach ($data['products'] as $productData) {
                 $product = $products->first(fn ($v) => $v->id == $productData['id']);
                 $product->reduceStock($productData['quantity']);
+                $purchase = $product->purchases()->orderBy('expired_on', 'asc')->where('stock', '>', 0)->first();
+                $purchase->reduceStock($productData['quantity']);
             }
         });
 
