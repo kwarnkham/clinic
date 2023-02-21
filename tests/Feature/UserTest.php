@@ -6,7 +6,7 @@ use App\Models\Role;
 use App\Models\User;
 use Tests\TestCase;
 
-class AdminTest extends TestCase
+class UserTest extends TestCase
 {
     public function test_create_user()
     {
@@ -14,7 +14,7 @@ class AdminTest extends TestCase
         $existedUsers = User::count();
         $roles->each(function ($role) {
             $userData = User::factory()->make();
-            $response = $this->actingAs($this->admin)->postJson('api/admin/users', [
+            $response = $this->actingAs($this->admin)->postJson('api/users', [
                 ...$userData->toArray(),
                 'password' => 'password',
                 'password_confirmation' => 'password',
@@ -41,7 +41,7 @@ class AdminTest extends TestCase
         $role = Role::latest()->first();
 
         $this->actingAs($this->admin)->postJson(
-            'api/admin/users/' . $user->id . '/role',
+            'api/users/' . $user->id . '/role',
             ['role_id' => $role->id]
         )->assertOk();
 
@@ -54,7 +54,7 @@ class AdminTest extends TestCase
         $role = Role::latest()->first();
 
         $this->actingAs($this->admin)->deleteJson(
-            'api/admin/users/' . $user->id . '/role',
+            'api/users/' . $user->id . '/role',
             ['role_id' => $role->id]
         )->assertOk();
 

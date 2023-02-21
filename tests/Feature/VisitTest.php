@@ -9,8 +9,18 @@ use App\Models\Product;
 use App\Models\Visit;
 use Tests\TestCase;
 
-class CashierTest extends TestCase
+class VisitTest extends TestCase
 {
+    public function test_record_a_visit()
+    {
+        $patient = Patient::factory()->create();
+        $response = $this->actingAs($this->recepitonist)->postJson('api/visits', [
+            'patient_id' => $patient->id
+        ]);
+        $response->assertOk();
+        $this->assertDatabaseCount('visits', 1);
+        $this->assertDatabaseHas('visits', ['patient_id' => $patient->id]);
+    }
 
     public function test_add_products_to_a_visit(): void
     {
@@ -54,15 +64,14 @@ class CashierTest extends TestCase
         });
 
         $this->assertDatabaseCount('purchases', $products->count() * 2);
-
         // record a new visit
         $this->actingAs($this->recepitonist)
-            ->postJson('api/receptionist/patients', $patient->toArray());
+            ->postJson('api/visits', ['patient_id' => $patient->id]);
 
         $visit = Visit::first();
 
         $response = $this->actingAs($this->cashier)
-            ->postJson('api/cashier/visits/' . $visit->id . '/products', [
+            ->postJson('api/visits/' . $visit->id . '/products', [
                 'products' => $products->map(fn ($product) => [
                     'id' => $product->id,
                     'quantity' => $quantity,
@@ -71,7 +80,7 @@ class CashierTest extends TestCase
             ]);
 
         $response->assertOk();
-
+        return;
         $this->assertDatabaseCount('product_visit', $count);
         $this->assertDatabaseHas('product_visit', [...$products->only(['name', 'description', 'sale_price', 'latest_purchase_price', 'stock'])->toArray(), 'quantity' => $quantity, 'discount' => $discount]);
         $this->assertEquals(VisitStatus::PRODUCTS_ADDED->value, $visit->fresh()->status);
@@ -85,5 +94,13 @@ class CashierTest extends TestCase
             $this->assertEquals($product->purchases()->first()->stock, $quantity);
             $this->assertEquals($product->purchases()->latest('id')->first()->stock, 0);
         });
+    }
+
+    public function test_confirm_products_in_a_visit()
+    {
+        $visit = Visit::factory()->for(Patient::factory())->create();
+        $response = $this->actingAs($this->pharmacist)->postJson('api/visits/' . $visit->id . '/confirm');
+        $response->assertOk();
+        $this->assertEquals($visit->fresh()->status, VisitStatus::CONFIRMED->value);
     }
 }

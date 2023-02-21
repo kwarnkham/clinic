@@ -3,13 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ResponseStatus;
-use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 
-class AdminController extends Controller
+class UserController extends Controller
 {
-    public function createUser(Request $request)
+    public function store(Request $request)
     {
         $data = $request->validate([
             'name' => ['required'],

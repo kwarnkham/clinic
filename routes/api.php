@@ -3,9 +3,12 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CashierController;
 use App\Http\Controllers\ItemController;
+use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PharmacistController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReceptionistController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\VisitController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -38,28 +41,31 @@ Route::controller(ProductController::class)->prefix('/products')->group(function
     });
 });
 
-Route::controller(AdminController::class)->prefix('/admin')->group(function () {
+Route::controller(UserController::class)->prefix('/users')->group(function () {
     Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
-        Route::post('users', 'createUser');
-        Route::post('users/{user}/role', 'assignRole');
-        Route::delete('users/{user}/role', 'removeRole');
+        Route::post('', 'store');
+        Route::post('{user}/role', 'assignRole');
+        Route::delete('{user}/role', 'removeRole');
     });
 });
 
-Route::controller(ReceptionistController::class)->prefix('/receptionist')->group(function () {
+
+Route::controller(PatientController::class)->prefix('/patients')->group(function () {
     Route::middleware(['auth:sanctum', 'role:receptionist'])->group(function () {
-        Route::post('patients', 'registerPatient');
+        Route::post('', 'store');
     });
 });
 
-Route::controller(CashierController::class)->prefix('/cashier')->group(function () {
-    Route::middleware(['auth:sanctum', 'role:cashier'])->group(function () {
-        Route::post('visits/{visit}/products', 'recordProduct');
-    });
-});
-
-Route::controller(PharmacistController::class)->prefix('/pharmacist')->group(function () {
-    Route::middleware(['auth:sanctum', 'role:pharmacist'])->group(function () {
-        Route::post('visits/{visit}/confirm', 'confirmProduts');
+Route::controller(VisitController::class)->prefix('/visits')->group(function () {
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::middleware(['role:cashier'])->group(function () {
+            Route::post('{visit}/products', 'recordProduct');
+        });
+        Route::middleware(['role:pharmacist'])->group(function () {
+            Route::post('{visit}/confirm', 'confirmProdut');
+        });
+        Route::middleware(['role:receptionist'])->group(function () {
+            Route::post('', 'store');
+        });
     });
 });

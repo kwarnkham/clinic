@@ -7,9 +7,9 @@ use App\Enums\VisitStatus;
 use App\Models\Patient;
 use Illuminate\Http\Request;
 
-class ReceptionistController extends Controller
+class PatientController extends Controller
 {
-    public function registerPatient(Request $request)
+    public function store(Request $request)
     {
         $data = $request->validate([
             'name' => ['required'],
