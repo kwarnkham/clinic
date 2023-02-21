@@ -16,8 +16,10 @@ return new class extends Migration
             $table->integer('purchasable_id')->constrained();
             $table->string('purchasable_type')->constrained();
             $table->unsignedInteger('quantity');
+            $table->unsignedBigInteger('stock');
             $table->double('price');
             $table->tinyInteger('status')->default(1);
+            $table->date('expired_on')->nullable();
             $table->timestamps();
         });
     }

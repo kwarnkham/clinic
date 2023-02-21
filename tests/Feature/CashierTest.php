@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Item;
 use App\Models\Patient;
 use App\Models\Product;
+use App\Models\Purchase;
 use App\Models\Visit;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -18,11 +19,21 @@ class CashierTest extends TestCase
         $patient = Patient::factory()->create();
         $count = rand(1, 10);
         $quantity = rand(1, 10);
-        $discount = rand(1, 10);
-        $products = Product::factory($count)->for(Item::factory())->create([
-            'sale_price' => $discount,
-            'stock' => $quantity
-        ]);
+        $purchase_price = rand(1000, 10000);
+        $sale_price = $purchase_price + $purchase_price * 0.2;
+        $discount = $sale_price * 0.1;
+        $products = Product::factory($count)
+            ->for(Item::factory())
+            ->has(Purchase::factory()->state([
+                'quantity' => $quantity,
+                'stock' => $quantity,
+                'price' => $purchase_price
+            ]))
+            ->create([
+                'sale_price' => $sale_price,
+                'stock' => $quantity
+            ]);
+
         $this->actingAs($this->recepitonist)
             ->postJson('api/receptionist/patients', $patient->toArray());
         $visit = Visit::first();

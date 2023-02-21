@@ -6,6 +6,7 @@ use App\Enums\ResponseStatus;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -28,8 +29,20 @@ class ProductController extends Controller
         $data = $request->validate([
             'quantity' => ['required', 'numeric'],
             'price' => ['required', 'numeric'],
+            'expired_on' => ['nullable', 'date']
         ]);
-        $purchase = $product->purchases()->create($data);
+        $purchase = DB::transaction(function () use ($product, $data) {
+            $purchase = $product->purchases()->create(
+                [
+                    ...$data,
+                    'stock' => $data['quantity']
+                ]
+            );
+            $product->stock += $data['quantity'];
+            $product->save();
+            return $purchase;
+        });
+
         return response()->json([
             'purchase' => $purchase
         ], ResponseStatus::CREATED->value);
