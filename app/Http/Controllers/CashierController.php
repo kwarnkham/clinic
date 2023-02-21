@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\Visit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CashierController extends Controller
 {
@@ -36,13 +37,24 @@ class CashierController extends Controller
                 'Discount cannot be greater than the sale price'
             );
 
+            abort_unless(
+                $product->validateQuantity($productData['quantity']),
+                ResponseStatus::BAD_REQUEST->value,
+                'Quantity cannot be greater than the stock'
+            );
+
             return $product->populate($productData);
         }, $data['products']);
+        DB::transaction(function () use ($visit, $data, $products) {
+            $visit->products()->attach(
+                collect($data['products'])->mapWithKeys(fn ($v) => [$v['id'] => $v])->toArray()
+            );
+            foreach ($data['products'] as $productData) {
+                $product = $products->first(fn ($v) => $v->id == $productData['id']);
+                $product->reduceStock($productData['quantity']);
+            }
+        });
 
-        $visit->products()->attach(
-            collect($data['products'])->mapWithKeys(fn ($v) => [$v['id'] => $v])->toArray()
-        );
-
-        return response()->json(['visit' => $visit]);
+        return response()->json(['visit' => $visit->load(['products'])]);
     }
 }

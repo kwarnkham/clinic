@@ -19,4 +19,15 @@ class ProductTest extends TestCase
         $this->assertFalse($product->validateDiscount($price + 1));
         $this->assertFalse($product->validateDiscount($price + 0.1));
     }
+
+    public function test_validate_quantity()
+    {
+        $stock = fake()->numberBetween(1, 10);
+        $product = Product::factory()
+            ->for(Item::factory())
+            ->create(['stock' => $stock]);
+        $this->assertTrue($product->validateQuantity($stock));
+        $this->assertTrue($product->validateQuantity($stock - 1));
+        $this->assertFalse($product->validateQuantity($stock + 1));
+    }
 }

@@ -42,6 +42,11 @@ class Product extends Model
         return $this->sale_price >= $discount;
     }
 
+    public function validateQuantity(int $quantity): bool
+    {
+        return $this->stock >= $quantity;
+    }
+
     public function populate(array $productData): array
     {
         $productData['name'] = $this->name;
@@ -50,5 +55,11 @@ class Product extends Model
         $productData['last_purchase_price'] = $this->last_purchase_price;
         $productData['stock'] = $this->stock;
         return $productData;
+    }
+
+    public function reduceStock(int $quantity): bool
+    {
+        $this->stock -= $quantity;
+        return $this->save();
     }
 }

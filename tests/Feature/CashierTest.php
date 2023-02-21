@@ -19,7 +19,10 @@ class CashierTest extends TestCase
         $count = rand(1, 10);
         $quantity = rand(1, 10);
         $discount = rand(1, 10);
-        $products = Product::factory($count)->for(Item::factory())->create(['sale_price' => $discount]);
+        $products = Product::factory($count)->for(Item::factory())->create([
+            'sale_price' => $discount,
+            'stock' => $quantity
+        ]);
         $this->actingAs($this->recepitonist)
             ->postJson('api/receptionist/patients', $patient->toArray());
         $visit = Visit::first();
