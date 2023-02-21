@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\VisitStatus;
 use App\Models\Item;
 use App\Models\Patient;
 use App\Models\Product;
@@ -73,6 +74,7 @@ class CashierTest extends TestCase
 
         $this->assertDatabaseCount('product_visit', $count);
         $this->assertDatabaseHas('product_visit', [...$products->only(['name', 'description', 'sale_price', 'latest_purchase_price', 'stock'])->toArray(), 'quantity' => $quantity, 'discount' => $discount]);
+        $this->assertEquals(VisitStatus::PRODUCTS_ADDED->value, $visit->fresh()->status);
 
         $products->fresh()->load(['purchases'])->each(function ($product) use ($quantity) {
             $this->assertEquals($product->stock, $quantity);

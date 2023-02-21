@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Enums\VisitStatus;
 use App\Models\Patient;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
+use App\Models\Visit;
 use Tests\TestCase;
 
 class RecepitonistTest extends TestCase
@@ -29,5 +29,6 @@ class RecepitonistTest extends TestCase
         $response = $this->actingAs($this->recepitonist)->postJson('api/receptionist/patients', $patientData->toArray());
         $response->assertCreated();
         $this->assertDatabaseCount('visits', 1);
+        $this->assertEquals(VisitStatus::PENDING->value, Visit::first()->status);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ResponseStatus;
+use App\Enums\VisitStatus;
 use App\Models\Product;
 use App\Models\Visit;
 use Illuminate\Http\JsonResponse;
@@ -45,6 +46,7 @@ class CashierController extends Controller
 
             return $product->populate($productData);
         }, $data['products']);
+
         DB::transaction(function () use ($visit, $data, $products) {
             $visit->products()->attach(
                 collect($data['products'])->mapWithKeys(fn ($v) => [$v['id'] => $v])->toArray()
@@ -52,9 +54,9 @@ class CashierController extends Controller
             foreach ($data['products'] as $productData) {
                 $product = $products->first(fn ($v) => $v->id == $productData['id']);
                 $product->reduceStock($productData['quantity']);
-                $purchase = $product->purchases()->orderBy('expired_on', 'asc')->where('stock', '>', 0)->first();
-                $purchase->reduceStock($productData['quantity']);
             }
+            $visit->status = VisitStatus::PRODUCTS_ADDED->value;
+            $visit->save();
         });
 
         return response()->json(['visit' => $visit->load(['products'])]);

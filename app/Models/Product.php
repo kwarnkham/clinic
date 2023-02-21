@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Facades\DB;
 
 class Product extends Model
 {
@@ -60,6 +61,9 @@ class Product extends Model
     public function reduceStock(int $quantity): bool
     {
         $this->stock -= $quantity;
-        return $this->save();
+        $purchase = $this->purchases()->orderBy('expired_on', 'asc')->where('stock', '>', 0)->first();
+        return DB::transaction(function () use ($purchase, $quantity) {
+            return ($this->save() && $purchase->reduceStock($quantity));
+        });
     }
 }
