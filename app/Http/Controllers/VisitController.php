@@ -75,9 +75,23 @@ class VisitController extends Controller
         return response()->json(['visit' => $visit->load(['products'])]);
     }
 
-    public function confirmProdut(Visit $visit): JsonResponse
+    public function confirmProduct(Visit $visit): JsonResponse
     {
         $visit->status = VisitStatus::CONFIRMED->value;
+        $visit->save();
+        return response()->json(['visit' => $visit]);
+    }
+
+    public function completeVisit(Visit $visit): JsonResponse
+    {
+        $visit->status = VisitStatus::COMPLETED->value;
+        $visit->save();
+        return response()->json(['visit' => $visit]);
+    }
+
+    public function cancelVisit(Visit $visit): JsonResponse
+    {
+        $visit->status = VisitStatus::CANCELED->value;
         $visit->save();
         return response()->json(['visit' => $visit]);
     }

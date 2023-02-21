@@ -59,7 +59,13 @@ Route::controller(VisitController::class)->prefix('/visits')->group(function () 
             Route::post('{visit}/products', 'recordProduct');
         });
         Route::middleware(['role:pharmacist'])->group(function () {
-            Route::post('{visit}/confirm', 'confirmProdut');
+            Route::post('{visit}/confirm', 'confirmProduct');
+        });
+        Route::middleware(['role:cashier'])->group(function () {
+            Route::post('{visit}/complete', 'completeVisit');
+        });
+        Route::middleware(['role:cashier'])->group(function () {
+            Route::post('{visit}/cancel', 'cancelVisit');
         });
         Route::middleware(['role:receptionist'])->group(function () {
             Route::post('', 'store');
