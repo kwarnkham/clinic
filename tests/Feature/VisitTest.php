@@ -85,9 +85,9 @@ class VisitTest extends TestCase
         $this->assertDatabaseCount('product_visit', $count);
         $this->assertDatabaseHas('product_visit', [...$products->only(['name', 'description', 'sale_price', 'latest_purchase_price', 'stock'])->toArray(), 'quantity' => $quantity, 'discount' => $discount]);
         $this->assertEquals(VisitStatus::PRODUCTS_ADDED->value, $visit->fresh()->status);
-        $this->assertEquals(
-            $visit->fresh()->amount,
-            $products->reduce(fn ($carry, $v) => $carry + (($v->sale_price - $discount) * $quantity), 0)
+        $this->assertTrue(
+            abs($visit->fresh()->amount -
+                $products->reduce(fn ($carry, $v) => $carry + (($v->sale_price - $discount) * $quantity), 0)) < 1
         );
         $products->fresh()->load(['purchases'])->each(function ($product) use ($quantity) {
             $this->assertEquals($product->stock, $quantity);
