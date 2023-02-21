@@ -37,5 +37,8 @@ class CashierTest extends TestCase
         $response->assertOk();
         $this->assertDatabaseCount('product_visit', $count);
         $this->assertDatabaseHas('product_visit', [...$products->only(['name', 'description', 'sale_price', 'latest_purchase_price', 'stock'])->toArray(), 'quantity' => $quantity, 'discount' => $discount]);
+        $products->fresh()->each(function ($product) {
+            $this->assertEquals($product->stock, 0);
+        });
     }
 }
