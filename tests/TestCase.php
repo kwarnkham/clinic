@@ -15,6 +15,7 @@ abstract class TestCase extends BaseTestCase
     protected $admin;
     protected $recepitonist;
     protected $cashier;
+    protected $pharmacist;
 
     public function setUp(): void
     {
@@ -32,5 +33,11 @@ abstract class TestCase extends BaseTestCase
             Role::where('name', RoleName::CASHIER->value)->first()
         );
         $this->cashier = $cashier;
+
+        $pharmacist = User::factory()->create();
+        $pharmacist->roles()->attach(
+            Role::where('name', RoleName::PHARMACIST->value)->first()
+        );
+        $this->pharmacist = $pharmacist;
     }
 }

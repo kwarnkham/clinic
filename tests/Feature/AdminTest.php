@@ -30,7 +30,8 @@ class AdminTest extends TestCase
             $roles->count() +
                 $this->admin->roles->count() +
                 $this->recepitonist->roles->count() +
-                $this->cashier->roles->count()
+                $this->cashier->roles->count() +
+                $this->pharmacist->roles->count()
         );
     }
 

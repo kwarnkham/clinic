@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CashierController;
 use App\Http\Controllers\ItemController;
+use App\Http\Controllers\PharmacistController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReceptionistController;
 use Illuminate\Http\Request;
@@ -54,5 +55,11 @@ Route::controller(ReceptionistController::class)->prefix('/receptionist')->group
 Route::controller(CashierController::class)->prefix('/cashier')->group(function () {
     Route::middleware(['auth:sanctum', 'role:cashier'])->group(function () {
         Route::post('visits/{visit}/products', 'recordProduct');
+    });
+});
+
+Route::controller(PharmacistController::class)->prefix('/pharmacist')->group(function () {
+    Route::middleware(['auth:sanctum', 'role:pharmacist'])->group(function () {
+        Route::post('visits/{visit}/confirm', 'confirmProduts');
     });
 });
