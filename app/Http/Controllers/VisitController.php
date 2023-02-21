@@ -65,6 +65,10 @@ class VisitController extends Controller
                 $product->reduceStock($productData['quantity']);
             }
             $visit->status = VisitStatus::PRODUCTS_ADDED->value;
+            $visit->amount = array_reduce($data['products'], function ($carry, $productData) {
+                return (
+                    ($productData['sale_price'] - $productData['discount']) * $productData['quantity']) + $carry;
+            }, 0);
             $visit->save();
         });
 

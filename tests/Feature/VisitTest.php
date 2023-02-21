@@ -70,21 +70,25 @@ class VisitTest extends TestCase
 
         $visit = Visit::first();
 
+        $productVisitData = $products->map(fn ($product) => [
+            'id' => $product->id,
+            'quantity' => $quantity,
+            'discount' => $discount
+        ])->values()->toArray();
+
         $response = $this->actingAs($this->cashier)
             ->postJson('api/visits/' . $visit->id . '/products', [
-                'products' => $products->map(fn ($product) => [
-                    'id' => $product->id,
-                    'quantity' => $quantity,
-                    'discount' => $discount
-                ])->values()->toArray()
+                'products' => $productVisitData
             ]);
 
         $response->assertOk();
-        return;
         $this->assertDatabaseCount('product_visit', $count);
         $this->assertDatabaseHas('product_visit', [...$products->only(['name', 'description', 'sale_price', 'latest_purchase_price', 'stock'])->toArray(), 'quantity' => $quantity, 'discount' => $discount]);
         $this->assertEquals(VisitStatus::PRODUCTS_ADDED->value, $visit->fresh()->status);
-
+        $this->assertEquals(
+            $visit->fresh()->amount,
+            $products->reduce(fn ($carry, $v) => $carry + (($v->sale_price - $discount) * $quantity), 0)
+        );
         $products->fresh()->load(['purchases'])->each(function ($product) use ($quantity) {
             $this->assertEquals($product->stock, $quantity);
 

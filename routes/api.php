@@ -1,12 +1,9 @@
 <?php
 
-use App\Http\Controllers\AdminController;
-use App\Http\Controllers\CashierController;
+
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\PatientController;
-use App\Http\Controllers\PharmacistController;
 use App\Http\Controllers\ProductController;
-use App\Http\Controllers\ReceptionistController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VisitController;
 use Illuminate\Http\Request;
