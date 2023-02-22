@@ -8,6 +8,12 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
+    public function checkToken()
+    {
+        return response()->json([
+            'user' => request()->user()
+        ]);
+    }
     public function store(Request $request)
     {
         $data = $request->validate([

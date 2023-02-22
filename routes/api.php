@@ -6,7 +6,6 @@ use App\Http\Controllers\PatientController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VisitController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,14 +19,14 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
 
 Route::controller(AuthController::class)->group(function () {
     Route::post('login', 'login');
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::delete('logout', 'logout');
+    });
 });
+
 
 
 Route::controller(ItemController::class)->prefix('/items')->group(function () {
@@ -44,10 +43,13 @@ Route::controller(ProductController::class)->prefix('/products')->group(function
 });
 
 Route::controller(UserController::class)->prefix('/users')->group(function () {
-    Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
-        Route::post('', 'store');
-        Route::post('{user}/role', 'assignRole');
-        Route::delete('{user}/role', 'removeRole');
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::middleware(['role:admin'])->group(function () {
+            Route::post('', 'store');
+            Route::post('{user}/role', 'assignRole');
+            Route::delete('{user}/role', 'removeRole');
+        });
+        Route::get('token', 'checkToken');
     });
 });
 

@@ -21,6 +21,12 @@ class AuthController extends Controller
         abort_if(is_null($user) || !Hash::check($data['password'], $user->password), ResponseStatus::BAD_REQUEST->value, 'Invalid Info');
         $user->tokens()->delete();
         $token = $user->createToken('');
-        return response()->json(['token' => $token->plainTextToken]);
+        return response()->json(['token' => $token->plainTextToken, 'user' => $user]);
+    }
+
+    public function logout(): JsonResponse
+    {
+        request()->user()->tokens()->delete();
+        return response()->json(['message' => 'Logged out']);
     }
 }

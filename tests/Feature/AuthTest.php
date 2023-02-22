@@ -18,4 +18,15 @@ class AuthTest extends TestCase
 
         $this->assertDatabaseCount('personal_access_tokens', 1);
     }
+
+    public function test_check_token()
+    {
+        $this->actingAs($this->admin)->getJson('api/users/token')->assertOk();
+    }
+
+    public function test_logout()
+    {
+        $this->actingAs($this->admin)->deleteJson('api/logout')->assertOk();
+        $this->assertDatabaseCount('personal_access_tokens', 0);
+    }
 }
