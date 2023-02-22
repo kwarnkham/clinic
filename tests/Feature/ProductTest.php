@@ -14,9 +14,10 @@ class ProductTest extends TestCase
     {
         $item = Item::factory()->create();
         $productData = Product::factory()->make();
+        $existedProducts = Product::count();
         $response = $this->actingAs($this->admin)->postJson('api/products', ['item_id' => $item->id, ...$productData->toArray()]);
         $response->assertCreated();
-        $this->assertDatabaseCount('products', 1);
+        $this->assertDatabaseCount('products', 1 + $existedProducts);
         $this->assertDatabaseHas('products', $productData->toArray());
         $this->assertEquals($response->json()['product']['stock'], 0);
         $this->assertNull($response->json()['product']['last_purchase_price']);

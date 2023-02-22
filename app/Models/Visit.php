@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ItemType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,5 +30,24 @@ class Visit extends Model
                 'quantity',
                 'discount'
             ]);
+    }
+
+    public function addBookFees()
+    {
+        $product = Product::query()
+            ->whereRelation('item', 'type', '=', ItemType::NON_STOCKED->value)
+            ->where('name', 'Record book')
+            ->first();
+
+        $this->products()->attach($product->id, [
+            'name' => $product->name,
+            'description' => $product->description,
+            'sale_price' => $product->sale_price,
+            'stock' => 1,
+            'quantity' => 1
+        ]);
+
+        $this->amount += $product->sale_price;
+        $this->save();
     }
 }

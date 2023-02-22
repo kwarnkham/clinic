@@ -15,15 +15,19 @@ class PatientController extends Controller
             'name' => ['required'],
             'age' => ['required'],
             'gender' => ['required', 'boolean'],
-            'phone' => ['sometimes', 'required'],
-            'address' => ['sometimes', 'required']
+            'phone' => ['nullable'],
+            'address' => ['nullable'],
+            'with_book_fees' => ['boolean', 'nullable']
         ]);
+
         $data['code'] = Patient::generateCode();
-        $patient = Patient::create($data);
-        $patient->visits()->create([
+        $patient = Patient::create(collect($data)->except('with_book_fees')->toArray());
+        $visit = $patient->visits()->create([
             'status' => VisitStatus::PENDING->value,
             'amount' => 0
         ]);
+        if (array_key_exists('with_book_fees', $data) && $data['with_book_fees']) $visit->addBookFees();
+
         return response()->json(['patient' => $patient], ResponseStatus::CREATED->value);
     }
 

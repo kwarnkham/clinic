@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ItemType;
 use App\Enums\ResponseStatus;
 use App\Enums\VisitStatus;
 use App\Models\Product;
@@ -20,9 +21,13 @@ class VisitController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'patient_id' => ['required', 'exists:patients,id']
+            'patient_id' => ['required', 'exists:patients,id'],
+            'with_book_fees' => ['sometimes', 'boolean']
         ]);
-        $visit = Visit::create($data);
+        $visit = Visit::create(collect($data)->except('with_book_fees')->toArray());
+        if (array_key_exists('with_book_fees', $data) && $data['with_book_fees']) {
+            $visit->addBookFees();
+        }
         return response()->json(['visit' => $visit]);
     }
 

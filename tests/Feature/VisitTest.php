@@ -22,6 +22,20 @@ class VisitTest extends TestCase
         $this->assertDatabaseHas('visits', ['patient_id' => $patient->id]);
     }
 
+    public function test_record_a_visit_with_book_fees()
+    {
+        $patient = Patient::factory()->create();
+        $response = $this->actingAs($this->recepitonist)->postJson('api/visits', [
+            'patient_id' => $patient->id,
+            'with_book_fees' => 1
+        ]);
+        $response->assertOk();
+        $this->assertDatabaseCount('visits', 1);
+        $this->assertDatabaseHas('visits', ['patient_id' => $patient->id]);
+        $this->assertDatabaseCount('product_visit', 1);
+        $this->assertEquals(Product::first()->sale_price, Visit::first()->amount);
+    }
+
     public function test_add_products_to_a_visit(): void
     {
         $patient = Patient::factory()->create();
