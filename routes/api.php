@@ -57,6 +57,7 @@ Route::controller(UserController::class)->prefix('/users')->group(function () {
 Route::controller(PatientController::class)->prefix('/patients')->group(function () {
     Route::middleware(['auth:sanctum', 'role:receptionist'])->group(function () {
         Route::post('', 'store');
+        Route::get('', 'index');
     });
 });
 

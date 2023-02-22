@@ -26,4 +26,9 @@ class PatientTest extends TestCase
         $this->assertDatabaseCount('visits', 1);
         $this->assertEquals(VisitStatus::PENDING->value, Visit::first()->status);
     }
+
+    public function test_list_patients()
+    {
+        $this->actingAs($this->admin)->getJson('api/patients')->assertOk();
+    }
 }

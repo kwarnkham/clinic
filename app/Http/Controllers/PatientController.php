@@ -26,4 +26,11 @@ class PatientController extends Controller
         ]);
         return response()->json(['patient' => $patient], ResponseStatus::CREATED->value);
     }
+
+    public function index()
+    {
+        return response()->json([
+            'data' => Patient::query()->latest('id')->paginate()
+        ]);
+    }
 }
