@@ -14,7 +14,7 @@ class ProductController extends Controller
     {
         $data = $request->validate([
             'item_id' => ['required', 'exists:items,id'],
-            'name' => ['required'],
+            'name' => ['required', 'unique:products,name'],
             'description' => ['nullable'],
             'sale_price' => ['required'],
         ]);

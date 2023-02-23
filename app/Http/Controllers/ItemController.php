@@ -29,7 +29,7 @@ class ItemController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'name' => ['required'],
+            'name' => ['required', 'unique:items,name'],
             'description' => ['nullable']
         ]);
         $item = Item::create($data);
