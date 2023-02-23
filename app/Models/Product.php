@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -65,5 +66,22 @@ class Product extends Model
         return DB::transaction(function () use ($purchase, $quantity) {
             return ($this->save() && $purchase->reduceStock($quantity));
         });
+    }
+
+    public function scopeFilter(Builder $query, array $filters)
+    {
+        $query->when(
+            $filters['search'] ?? null,
+            fn (Builder $query, $search) => $query->where(function (Builder $query) use ($search) {
+                $query->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhereRelation('item', 'name', 'like', '%' . $search . '%');
+            })
+        );
+
+        $query->when(
+            $filters['item_id'] ?? null,
+            fn (Builder $query, $item_id) => $query->where('item_id', $item_id)
+        );
     }
 }

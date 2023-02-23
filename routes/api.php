@@ -41,6 +41,7 @@ Route::controller(ItemController::class)->prefix('/items')->group(function () {
 Route::controller(ProductController::class)->prefix('/products')->group(function () {
     Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
         Route::post('', 'store');
+        Route::get('', 'index');
         Route::post('{product}/purchase', 'purchase');
     });
 });
