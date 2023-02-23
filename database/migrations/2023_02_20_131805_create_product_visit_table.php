@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('visit_id')->constrained();
             $table->foreignId('product_id')->constrained();
-            $table->string('name')->unique();
+            $table->string('name');
             $table->string('description')->nullable();
             $table->double('sale_price');
             $table->double('last_purchase_price')->nullable();

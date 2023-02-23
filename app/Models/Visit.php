@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ItemType;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -49,5 +50,13 @@ class Visit extends Model
 
         $this->amount += $product->sale_price;
         $this->save();
+    }
+
+    public function scopeFilter(Builder $query, array $filters)
+    {
+        $query->when(
+            $filters['statuses'] ?? null,
+            fn (Builder $query, $statuses) => $query->whereIn('status', explode(',', $statuses))
+        );
     }
 }

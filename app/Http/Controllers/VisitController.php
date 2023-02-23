@@ -15,7 +15,21 @@ class VisitController extends Controller
 {
     public function index()
     {
-        return response()->json(Visit::query()->paginate());
+        $filters = request()->validate([
+            'statuses' => [
+                'sometimes',
+                function (string $attribute, string $value, $fail) {
+                    $statuses = explode(',', $value);
+                    foreach ($statuses as $status) {
+                        if (!in_array($status, VisitStatus::toArray())) {
+                            $fail("The {$attribute} is invalid.");
+                        }
+                    }
+                }
+            ]
+        ]);
+        $query = Visit::query()->with(['patient'])->filter($filters);
+        return response()->json(['data' => $query->paginate(request()->per_page ?? 20)]);
     }
 
     public function store(Request $request): JsonResponse
