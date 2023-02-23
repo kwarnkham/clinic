@@ -39,10 +39,10 @@ class ItemController extends Controller
     /**
      * Display the specified resource.
      */
-    // public function show(Item $item): Response
-    // {
-    //     //
-    // }
+    public function show(Item $item): JsonResponse
+    {
+        return response()->json(['item' => $item]);
+    }
 
 
     /**

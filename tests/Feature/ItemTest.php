@@ -31,4 +31,11 @@ class ItemTest extends TestCase
 
         $this->assertDatabaseHas('items', $updatedItem->toArray());
     }
+
+    public function test_show_an_item()
+    {
+        $item = Item::factory()->create();
+        $response = $this->actingAs($this->admin)->getJson('api/items/' . $item->id);
+        $response->assertOk();
+    }
 }

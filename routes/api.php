@@ -34,6 +34,7 @@ Route::controller(ItemController::class)->prefix('/items')->group(function () {
         Route::post('', 'store');
         Route::put('{item}', 'update');
         Route::get('', 'index');
+        Route::get('{item}', 'show');
     });
 });
 
