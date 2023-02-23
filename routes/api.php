@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VisitController;
 use Illuminate\Support\Facades\Route;
@@ -38,9 +39,16 @@ Route::controller(ItemController::class)->prefix('/items')->group(function () {
     });
 });
 
+Route::controller(PurchaseController::class)->prefix('/purchases')->group(function () {
+    Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+        Route::get('', 'index');
+    });
+});
+
 Route::controller(ProductController::class)->prefix('/products')->group(function () {
     Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
         Route::post('', 'store');
+        Route::get('{product}', 'show');
         Route::get('', 'index');
         Route::post('{product}/purchase', 'purchase');
     });

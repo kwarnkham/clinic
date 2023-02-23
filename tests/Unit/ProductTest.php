@@ -30,9 +30,4 @@ class ProductTest extends TestCase
         $this->assertTrue($product->validateQuantity($stock - 1));
         $this->assertFalse($product->validateQuantity($stock + 1));
     }
-
-    public function test_list_products()
-    {
-        $this->actingAs($this->admin)->getJson('api/products')->assertOk();
-    }
 }

@@ -4,8 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Item;
 use App\Models\Product;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
+use App\Models\Purchase;
 use Tests\TestCase;
 
 class ProductTest extends TestCase
@@ -45,5 +44,17 @@ class ProductTest extends TestCase
             'purchasable_type' => Product::class
         ]);
         $this->assertEquals($quantity, $product->fresh()->stock);
+        $this->assertEquals($product->fresh()->last_purchase_price, Purchase::first()->price);
+    }
+
+    public function test_list_products()
+    {
+        $this->actingAs($this->admin)->getJson('api/products')->assertOk();
+    }
+
+    public function test_show_product()
+    {
+        $product = Product::factory()->for(Item::factory())->create();
+        $this->actingAs($this->admin)->getJson('api/products/' . $product->id)->assertOk();
     }
 }

@@ -53,8 +53,16 @@ class ProductController extends Controller
             return $purchase;
         });
 
+        $product->last_purchase_price = $data['price'];
+        $product->save();
+
         return response()->json([
             'purchase' => $purchase
         ], ResponseStatus::CREATED->value);
+    }
+
+    public function show(Product $product)
+    {
+        return response()->json(['product' => $product]);
     }
 }
