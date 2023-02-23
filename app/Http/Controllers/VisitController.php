@@ -123,7 +123,7 @@ class VisitController extends Controller
     public function show(Visit $visit)
     {
         return response()->json([
-            'visit' => $visit->load(['products'])
+            'visit' => $visit->load(['products', 'patient'])
         ]);
     }
 }

@@ -12,9 +12,14 @@ class ItemController extends Controller
     /**
      * Display a listing of the resource.
      */
-    // public function index(): Response
-    // {
-    // }
+    public function index(): JsonResponse
+    {
+        $filters = request()->validate([
+            'search' => ['sometimes', 'required']
+        ]);
+        $query = Item::query()->filter($filters);
+        return response()->json(['data' => $query->paginate(request()->per_page ?? 20)]);
+    }
 
 
     /**

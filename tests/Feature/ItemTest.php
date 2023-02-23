@@ -16,4 +16,9 @@ class ItemTest extends TestCase
         $this->assertDatabaseHas('items', $itemData->toArray());
         $this->assertDatabaseCount('items', 1 + $existedItems);
     }
+
+    public function test_list_items()
+    {
+        $this->actingAs($this->admin)->getJson('api/items')->assertOk();
+    }
 }
