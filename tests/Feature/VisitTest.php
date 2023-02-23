@@ -11,6 +11,12 @@ use Tests\TestCase;
 
 class VisitTest extends TestCase
 {
+
+    public function test_show_a_visit()
+    {
+        $visit = Visit::factory()->for(Patient::factory())->create();
+        $this->actingAs($this->admin)->getJson('api/visits/' . $visit->id)->assertOk();
+    }
     public function test_record_a_visit()
     {
         $patient = Patient::factory()->create();

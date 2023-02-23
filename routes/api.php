@@ -79,5 +79,6 @@ Route::controller(VisitController::class)->prefix('/visits')->group(function () 
             Route::post('', 'store');
         });
         Route::get('', 'index');
+        Route::get('{visit}', 'show');
     });
 });

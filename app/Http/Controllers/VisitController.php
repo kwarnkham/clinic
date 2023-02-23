@@ -119,4 +119,11 @@ class VisitController extends Controller
         $visit->save();
         return response()->json(['visit' => $visit]);
     }
+
+    public function show(Visit $visit)
+    {
+        return response()->json([
+            'visit' => $visit->load(['products'])
+        ]);
+    }
 }
