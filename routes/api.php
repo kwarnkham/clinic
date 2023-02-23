@@ -32,6 +32,7 @@ Route::controller(AuthController::class)->group(function () {
 Route::controller(ItemController::class)->prefix('/items')->group(function () {
     Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
         Route::post('', 'store');
+        Route::put('{item}', 'update');
         Route::get('', 'index');
     });
 });

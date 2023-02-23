@@ -6,6 +6,7 @@ use App\Enums\ResponseStatus;
 use App\Models\Item;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ItemController extends Controller
 {
@@ -47,10 +48,15 @@ class ItemController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    // public function update(Request $request, Item $item): RedirectResponse
-    // {
-    //     //
-    // }
+    public function update(Request $request, Item $item): JsonResponse
+    {
+        $data = $request->validate([
+            'name' => ['required', Rule::unique('items', 'name')->ignore($item->id)],
+            'description' => ['nullable']
+        ]);
+        $item->update($data);
+        return response()->json(['item' => $item]);
+    }
 
     /**
      * Remove the specified resource from storage.

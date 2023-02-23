@@ -21,4 +21,14 @@ class ItemTest extends TestCase
     {
         $this->actingAs($this->admin)->getJson('api/items')->assertOk();
     }
+
+    public function test_update_item()
+    {
+        $item = Item::factory()->create();
+        $updatedItem = Item::factory()->make();
+        $response = $this->actingAs($this->admin)->putJson('api/items/' . $item->id, $updatedItem->toArray());
+        $response->assertOk();
+
+        $this->assertDatabaseHas('items', $updatedItem->toArray());
+    }
 }
