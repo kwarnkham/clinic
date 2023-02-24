@@ -18,7 +18,7 @@ class ItemController extends Controller
         $filters = request()->validate([
             'search' => ['sometimes', 'required']
         ]);
-        $query = Item::query()->filter($filters);
+        $query = Item::query()->latest('id')->filter($filters);
         return response()->json(['data' => $query->paginate(request()->per_page ?? 20)]);
     }
 

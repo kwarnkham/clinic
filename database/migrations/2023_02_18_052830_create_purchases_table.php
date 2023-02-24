@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\PurchaseStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -18,7 +19,7 @@ return new class extends Migration
             $table->unsignedInteger('quantity');
             $table->unsignedBigInteger('stock');
             $table->double('price');
-            $table->tinyInteger('status')->default(1);
+            $table->tinyInteger('status')->default(PurchaseStatus::NORMAL->value);
             $table->date('expired_on')->nullable();
             $table->timestamps();
         });

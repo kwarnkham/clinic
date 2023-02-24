@@ -57,7 +57,7 @@ class ProductController extends Controller
         $product->save();
 
         return response()->json([
-            'purchase' => $purchase
+            'purchase' => $purchase->load(['purchasable']),
         ], ResponseStatus::CREATED->value);
     }
 
