@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ItemType;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -46,6 +47,7 @@ class Product extends Model
 
     public function validateQuantity(int $quantity): bool
     {
+        if ($this->item->type == ItemType::NON_STOCKED->value) return true;
         return $this->stock >= $quantity;
     }
 
@@ -61,6 +63,7 @@ class Product extends Model
 
     public function reduceStock(int $quantity): bool
     {
+        if ($this->item->type == ItemType::NON_STOCKED->value) return true;
         $this->stock -= $quantity;
         $purchase = $this->purchases()->orderBy('expired_on', 'asc')->where('stock', '>', 0)->first();
         return DB::transaction(function () use ($purchase, $quantity) {

@@ -22,6 +22,7 @@ return new class extends Migration
             $table->unsignedInteger('stock');
             $table->unsignedInteger('quantity');
             $table->double('discount')->default(0);
+            $table->unique(['visit_id', 'product_id']);
             $table->timestamps();
         });
     }

@@ -28,7 +28,7 @@ class VisitController extends Controller
                 }
             ]
         ]);
-        $query = Visit::query()->with(['patient'])->filter($filters);
+        $query = Visit::query()->latest('id')->with(['patient'])->filter($filters);
         return response()->json(['data' => $query->paginate(request()->per_page ?? 20)]);
     }
 
@@ -52,10 +52,12 @@ class VisitController extends Controller
             'products.*' => ['required', 'array'],
             'products.*.id' => ['required', 'exists:products,id', 'distinct'],
             'products.*.quantity' => ['required', 'numeric'],
-            'products.*.discount' => ['nullable', 'numeric']
+            'products.*.discount' => ['nullable', 'numeric'],
+            'discount' => ['sometimes', 'numeric', 'required']
         ]);
 
         $products = Product::query()
+            ->with(['item'])
             ->whereIn('id', array_values(array_map(
                 fn ($value) => $value['id'],
                 $data['products']
@@ -65,11 +67,12 @@ class VisitController extends Controller
         $data['products'] = array_map(function ($productData) use ($products) {
             $product = $products->first(fn ($v) => $v->id == $productData['id']);
 
-            abort_unless(
-                $product->validateDiscount($productData['discount']),
-                ResponseStatus::BAD_REQUEST->value,
-                'Discount cannot be greater than the sale price'
-            );
+            if (array_key_exists('discount', $productData))
+                abort_unless(
+                    $product->validateDiscount($productData['discount']),
+                    ResponseStatus::BAD_REQUEST->value,
+                    'Discount cannot be greater than the sale price'
+                );
 
             abort_unless(
                 $product->validateQuantity($productData['quantity']),
@@ -81,7 +84,7 @@ class VisitController extends Controller
         }, $data['products']);
 
         DB::transaction(function () use ($visit, $data, $products) {
-            $visit->products()->attach(
+            $visit->products()->sync(
                 collect($data['products'])->mapWithKeys(fn ($v) => [$v['id'] => $v])->toArray()
             );
             foreach ($data['products'] as $productData) {
@@ -91,8 +94,10 @@ class VisitController extends Controller
             $visit->status = VisitStatus::PRODUCTS_ADDED->value;
             $visit->amount = array_reduce($data['products'], function ($carry, $productData) {
                 return (
-                    ($productData['sale_price'] - $productData['discount']) * $productData['quantity']) + $carry;
+                    ($productData['sale_price'] - ($productData['discount'] ?? 0)) * $productData['quantity']) + $carry;
             }, 0);
+            if (array_key_exists('discount', $data))
+                $visit->discount = $data['discount'];
             $visit->save();
         });
 

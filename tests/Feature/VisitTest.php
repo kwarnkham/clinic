@@ -50,6 +50,7 @@ class VisitTest extends TestCase
         $purchase_price = rand(1000, 10000);
         $sale_price = $purchase_price + $purchase_price * 0.2;
         $discount = $sale_price * 0.1;
+        $visitDiscount = rand(1, 5);
         // all products are at stock zero
         $products = Product::factory($count)
             ->for(Item::factory())
@@ -86,7 +87,12 @@ class VisitTest extends TestCase
         $this->assertDatabaseCount('purchases', $products->count() * 2);
         // record a new visit
         $this->actingAs($this->recepitonist)
-            ->postJson('api/visits', ['patient_id' => $patient->id]);
+            ->postJson('api/visits', [
+                'patient_id' => $patient->id,
+                'with_book_fees' => 1
+            ]);
+
+        $this->assertDatabaseCount('product_visit', 1);
 
         $visit = Visit::first();
 
@@ -98,7 +104,8 @@ class VisitTest extends TestCase
 
         $response = $this->actingAs($this->cashier)
             ->postJson('api/visits/' . $visit->id . '/products', [
-                'products' => $productVisitData
+                'products' => $productVisitData,
+                'discount' => $visitDiscount
             ]);
 
         $response->assertOk();
