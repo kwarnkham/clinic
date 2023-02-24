@@ -49,6 +49,7 @@ Route::controller(PurchaseController::class)->prefix('/purchases')->group(functi
 Route::controller(ProductController::class)->prefix('/products')->group(function () {
     Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
         Route::post('', 'store');
+        Route::get('search', 'search');
         Route::get('{product}', 'show');
         Route::get('', 'index');
         Route::post('{product}/purchase', 'purchase');

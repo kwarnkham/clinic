@@ -57,4 +57,9 @@ class ProductTest extends TestCase
         $product = Product::factory()->for(Item::factory())->create();
         $this->actingAs($this->admin)->getJson('api/products/' . $product->id)->assertOk();
     }
+
+    public function test_search_product()
+    {
+        $this->actingAs($this->admin)->getJson('api/products/search')->assertOk();
+    }
 }

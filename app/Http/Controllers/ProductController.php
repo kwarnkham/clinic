@@ -28,10 +28,20 @@ class ProductController extends Controller
     {
         $filters = request()->validate([
             'search' => ['sometimes', 'required'],
-            'item_id' => ['exists:items,id']
+            'item_id' => ['sometimes', 'exists:items,id'],
         ]);
         $query = Product::query()->filter($filters);
         return response()->json(['data' => $query->paginate(request()->per_page ?? 20)]);
+    }
+
+    public function search(): JsonResponse
+    {
+        $filters = request()->validate([
+            'search' => ['sometimes', 'required'],
+            'limit' => ['sometimes', 'required', 'numeric']
+        ]);
+        $query = Product::query()->filter($filters);
+        return response()->json(['products' => $query->get()]);
     }
 
     public function purchase(Request $request, Product $product): JsonResponse

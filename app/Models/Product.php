@@ -83,5 +83,10 @@ class Product extends Model
             $filters['item_id'] ?? null,
             fn (Builder $query, $item_id) => $query->where('item_id', $item_id)
         );
+
+        $query->when(
+            $filters['limit'] ?? null,
+            fn (Builder $query, $limit) => $query->take($limit)
+        );
     }
 }
