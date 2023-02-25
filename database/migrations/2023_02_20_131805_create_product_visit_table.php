@@ -19,7 +19,6 @@ return new class extends Migration
             $table->string('description')->nullable();
             $table->double('sale_price');
             $table->double('last_purchase_price')->nullable();
-            $table->unsignedInteger('stock');
             $table->unsignedInteger('quantity');
             $table->double('discount')->default(0);
             $table->unique(['visit_id', 'product_id']);

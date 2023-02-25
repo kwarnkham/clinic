@@ -11,10 +11,29 @@ class Purchase extends Model
 {
     use HasFactory;
 
-    public function reduceStock(int $quantity): bool
+    public function productVisits()
     {
-        $this->stock -= $quantity;
-        return $this->save();
+        return $this->belongsToMany(ProductVisit::class)
+            ->withTimestamps()
+            ->withPivot([
+                'quantity'
+            ]);
+    }
+
+    public function reduceStock(int $quantity, ProductVisit $productVisit): int
+    {
+        if ($quantity <= $this->stock) {
+            $this->stock -= $quantity;
+            $this->save();
+            $productVisit->purchases()->attach([$this->id => ['quantity' => $quantity]]);
+            return 0;
+        } else {
+            $stock = $this->stock;
+            $this->stock = 0;
+            $this->save();
+            $productVisit->purchases()->attach([$this->id => ['quantity' => $stock]]);
+            return $quantity - $stock;
+        }
     }
 
     public function purchasable(): MorphTo

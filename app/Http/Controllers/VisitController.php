@@ -53,7 +53,8 @@ class VisitController extends Controller
             'products.*.id' => ['required', 'exists:products,id', 'distinct'],
             'products.*.quantity' => ['required', 'numeric'],
             'products.*.discount' => ['nullable', 'numeric'],
-            'discount' => ['sometimes', 'numeric', 'required']
+            'discount' => ['sometimes', 'numeric', 'required'],
+            'status' => ['required', 'numeric', 'in:' . VisitStatus::toString()]
         ]);
 
         $products = Product::query()
@@ -64,7 +65,7 @@ class VisitController extends Controller
             )))
             ->get();
 
-        $data['products'] = array_map(function ($productData) use ($products) {
+        $data['products'] = array_map(function ($productData) use ($products, $visit) {
             $product = $products->first(fn ($v) => $v->id == $productData['id']);
 
             if (array_key_exists('discount', $productData))
@@ -74,8 +75,10 @@ class VisitController extends Controller
                     'Discount cannot be greater than the sale price'
                 );
 
+            $existedProduct = $visit->products->first(fn ($val) => $val->id == $productData['id']);
+            $existedQuantity = $existedProduct ? $existedProduct->pivot->quantity : 0;
             abort_unless(
-                $product->validateQuantity($productData['quantity']),
+                $product->validateQuantity($productData['quantity'] - $existedQuantity),
                 ResponseStatus::BAD_REQUEST->value,
                 'Quantity cannot be greater than the stock'
             );
@@ -83,15 +86,27 @@ class VisitController extends Controller
             return $product->populate($productData);
         }, $data['products']);
 
-        DB::transaction(function () use ($visit, $data, $products) {
+        DB::transaction(function () use ($visit, $data) {
+            Product::reverseStock($visit->products);
             $visit->products()->sync(
-                collect($data['products'])->mapWithKeys(fn ($v) => [$v['id'] => $v])->toArray()
+                collect($data['products'])->mapWithKeys(fn ($v) => [$v['id'] => [
+                    'name' => $v['name'],
+                    'description' => $v['description'],
+                    'sale_price' => $v['sale_price'],
+                    'last_purchase_price' => $v['last_purchase_price'],
+                    'quantity' => $v['quantity'],
+                    'discount' => $v['discount'] ?? 0,
+                ]])->toArray()
             );
+
+            $visit->load(['products.item']);
+
             foreach ($data['products'] as $productData) {
-                $product = $products->first(fn ($v) => $v->id == $productData['id']);
+                $product = $visit->products->first(fn ($v) => $v->id == $productData['id']);
                 $product->reduceStock($productData['quantity']);
             }
-            $visit->status = VisitStatus::PRODUCTS_ADDED->value;
+
+            $visit->status = $data['status'];
             $visit->amount = array_reduce($data['products'], function ($carry, $productData) {
                 return (
                     ($productData['sale_price'] - ($productData['discount'] ?? 0)) * $productData['quantity']) + $carry;
@@ -101,7 +116,7 @@ class VisitController extends Controller
             $visit->save();
         });
 
-        return response()->json(['visit' => $visit->load(['products'])]);
+        return response()->json(['visit' => $visit->load(['products', 'patient'])]);
     }
 
     public function confirmProduct(Visit $visit): JsonResponse

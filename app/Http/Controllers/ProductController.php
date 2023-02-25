@@ -30,7 +30,7 @@ class ProductController extends Controller
             'search' => ['sometimes', 'required'],
             'item_id' => ['sometimes', 'exists:items,id'],
         ]);
-        $query = Product::query()->filter($filters);
+        $query = Product::query()->latest('id')->filter($filters);
         return response()->json(['data' => $query->paginate(request()->per_page ?? 20)]);
     }
 

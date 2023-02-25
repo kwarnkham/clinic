@@ -23,14 +23,14 @@ class Visit extends Model
         return $this->belongsToMany(Product::class)
             ->withTimestamps()
             ->withPivot([
+                'id',
                 'name',
                 'description',
                 'sale_price',
                 'last_purchase_price',
-                'stock',
                 'quantity',
                 'discount'
-            ]);
+            ])->using(ProductVisit::class);;
     }
 
     public function addBookFees()
@@ -44,7 +44,6 @@ class Visit extends Model
             'name' => $product->name,
             'description' => $product->description,
             'sale_price' => $product->sale_price,
-            'stock' => 1,
             'quantity' => 1
         ]);
 

@@ -14,4 +14,9 @@ enum VisitStatus: int
     {
         return [1, 2, 3, 4, 5];
     }
+
+    public static function toString()
+    {
+        return implode(',', static::toArray());
+    }
 }

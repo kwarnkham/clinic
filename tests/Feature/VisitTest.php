@@ -6,6 +6,7 @@ use App\Enums\VisitStatus;
 use App\Models\Item;
 use App\Models\Patient;
 use App\Models\Product;
+use App\Models\ProductVisit;
 use App\Models\Visit;
 use Tests\TestCase;
 
@@ -44,13 +45,27 @@ class VisitTest extends TestCase
 
     public function test_add_products_to_a_visit(): void
     {
-        $patient = Patient::factory()->create();
+        //register a patient with book fees
+        $patientData = Patient::factory()->make();
+        $response = $this->actingAs($this->recepitonist)->postJson('api/patients', [
+            ...$patientData->toArray(),
+            'with_book_fees' => 1
+        ]);
+        $response->assertCreated();
+
+        $this->assertDatabaseCount('visits', 1);
+        $this->assertDatabaseCount('patients', 1);
+        $this->assertDatabaseCount('product_visit', 1);
+
+        //prepare test data
+        $visit = Visit::first();
         $count = rand(1, 10);
         $quantity = rand(1, 10);
         $purchase_price = rand(1000, 10000);
         $sale_price = $purchase_price + $purchase_price * 0.2;
         $discount = $sale_price * 0.1;
         $visitDiscount = rand(1, 5);
+
         // all products are at stock zero
         $products = Product::factory($count)
             ->for(Item::factory())
@@ -68,63 +83,117 @@ class VisitTest extends TestCase
                     'expired_on' => now()->addMonths(3)->format('Y-m-d')
                 ]
             );
-        });
-
-        $this->assertDatabaseCount('purchases', $products->count());
-
-        // make product purchase again with different expire date
-        $products->each(function ($product) use ($quantity, $purchase_price) {
             $this->actingAs($this->admin)->postJson(
                 "api/products/$product->id/purchase",
                 [
                     'quantity' => $quantity,
                     'price' => $purchase_price,
-                    'expired_on' => now()->addMonth()->format('Y-m-d')
+                    'expired_on' => now()->addMonths(2)->format('Y-m-d')
+                ]
+            );
+            $this->actingAs($this->admin)->postJson(
+                "api/products/$product->id/purchase",
+                [
+                    'quantity' => $quantity,
+                    'price' => $purchase_price,
+                    'expired_on' => now()->addMonths(4)->format('Y-m-d')
                 ]
             );
         });
+        $this->assertDatabaseCount('purchases', $products->count() * 3);
 
-        $this->assertDatabaseCount('purchases', $products->count() * 2);
-        // record a new visit
-        $this->actingAs($this->recepitonist)
-            ->postJson('api/visits', [
-                'patient_id' => $patient->id,
-                'with_book_fees' => 1
+        //prepare visit product data
+        $productVisitData = $products->map(fn ($product) => [
+            'id' => $product->id,
+            'quantity' => $quantity * 2,
+            'discount' => $discount
+        ])->values()->toArray();
+
+        for ($i = 0; $i < 2; $i++) {
+            $response = $this->actingAs($this->cashier)
+                ->postJson('api/visits/' . $visit->id . '/products', [
+                    'products' => $productVisitData,
+                    'discount' => $visitDiscount,
+                    'status' => VisitStatus::PRODUCTS_ADDED->value,
+                ]);
+
+            $response->assertOk();
+            $this->assertDatabaseCount('product_visit', $count);
+            $this->assertDatabaseCount('product_visit', ProductVisit::count());
+            $this->assertDatabaseHas('product_visit', [
+                ...$products->only([
+                    'name',
+                    'description',
+                    'sale_price',
+                    'latest_purchase_price',
+                ])->toArray(), 'quantity' => $quantity * 2, 'discount' => $discount
+            ]);
+            $this->assertDatabaseCount('product_visit_purchase', $products->count() * 2);
+            $this->assertEquals(VisitStatus::PRODUCTS_ADDED->value, $visit->fresh()->status);
+            $this->assertTrue(
+                abs($visit->fresh()->amount -
+                    $products->reduce(fn ($carry, $v) => $carry + (($v->sale_price - $discount) * $quantity * 2), 0)) < 1
+            );
+
+            $products->fresh()->load(['purchases'])->each(function ($product) use ($quantity) {
+                $this->assertEquals($product->stock, $quantity);
+                $this->assertEquals($product->purchases()->orderBy('expired_on', 'asc')->first()->stock, 0);
+                $this->assertEquals($product->purchases()->orderBy('expired_on', 'desc')->first()->stock, $quantity);
+            });
+        }
+
+        // add a new product
+        $product = Product::factory()
+            ->for(Item::factory())
+            ->create([
+                'sale_price' => $sale_price,
             ]);
 
-        $this->assertDatabaseCount('product_visit', 1);
-
-        $visit = Visit::first();
+        $this->actingAs($this->admin)->postJson(
+            "api/products/$product->id/purchase",
+            [
+                'quantity' => $quantity,
+                'price' => $purchase_price,
+                'expired_on' => now()->addMonths(3)->format('Y-m-d')
+            ]
+        );
+        $this->assertDatabaseCount('purchases', ($products->count() * 3) + 1);
 
         $productVisitData = $products->map(fn ($product) => [
             'id' => $product->id,
-            'quantity' => $quantity,
+            'quantity' => $quantity * 2,
             'discount' => $discount
         ])->values()->toArray();
+
+        array_push($productVisitData, [
+            'id' => $product->id,
+            'quantity' => $quantity,
+        ]);
 
         $response = $this->actingAs($this->cashier)
             ->postJson('api/visits/' . $visit->id . '/products', [
                 'products' => $productVisitData,
-                'discount' => $visitDiscount
+                'discount' => $visitDiscount,
+                'status' => VisitStatus::PRODUCTS_ADDED->value,
             ]);
 
         $response->assertOk();
-        $this->assertDatabaseCount('product_visit', $count);
-        $this->assertDatabaseHas('product_visit', [...$products->only(['name', 'description', 'sale_price', 'latest_purchase_price', 'stock'])->toArray(), 'quantity' => $quantity, 'discount' => $discount]);
+
+        $this->assertDatabaseCount('product_visit', $count + 1);
+        $this->assertDatabaseCount('product_visit', ProductVisit::count());
+
+        $this->assertDatabaseCount('product_visit_purchase', ($products->count() * 2) + 1);
         $this->assertEquals(VisitStatus::PRODUCTS_ADDED->value, $visit->fresh()->status);
-        $this->assertTrue(
-            abs($visit->fresh()->amount -
-                $products->reduce(fn ($carry, $v) => $carry + (($v->sale_price - $discount) * $quantity), 0)) < 1
-        );
-        $products->fresh()->load(['purchases'])->each(function ($product) use ($quantity) {
-            $this->assertEquals($product->stock, $quantity);
 
-            $this->assertEquals($product->purchases()->orderBy('expired_on', 'asc')->first()->stock, 0);
-            $this->assertEquals($product->purchases()->orderBy('expired_on', 'desc')->first()->stock, $quantity);
-
-            $this->assertEquals($product->purchases()->first()->stock, $quantity);
-            $this->assertEquals($product->purchases()->latest('id')->first()->stock, 0);
+        $amount = $products->reduce(fn ($carry, $v) => $carry + (($v->sale_price - $discount) * $quantity * 2), 0) + ($product->sale_price * $quantity);
+        $this->assertTrue(abs($visit->fresh()->amount - $amount) < 1);
+        $this->assertEquals($product->fresh()->stock, 0);
+        Product::with(['purchases'])->get()->each(function ($product) {
+            $purchase = $product->purchases()->orderBy('expired_on', 'asc')->first();
+            if ($purchase)
+                $this->assertEquals($purchase->stock, 0);
         });
+        dump(ProductVisit::with(['purchases'])->get()->toArray());
     }
 
     public function test_confirm_products_in_a_visit()

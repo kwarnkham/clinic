@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ItemType;
 use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -30,11 +31,11 @@ class Product extends Model
         return $this->belongsToMany(Visit::class)
             ->withTimestamps()
             ->withPivot([
+                'id',
                 'name',
                 'description',
                 'sale_price',
                 'last_purchase_price',
-                'stock',
                 'quantity',
                 'discount'
             ]);
@@ -57,7 +58,6 @@ class Product extends Model
         $productData['description'] = $this->description;
         $productData['sale_price'] = $this->sale_price;
         $productData['last_purchase_price'] = $this->last_purchase_price;
-        $productData['stock'] = $this->stock;
         return $productData;
     }
 
@@ -65,11 +65,35 @@ class Product extends Model
     {
         if ($this->item->type == ItemType::NON_STOCKED->value) return true;
         $this->stock -= $quantity;
-        $purchase = $this->purchases()->orderBy('expired_on', 'asc')->where('stock', '>', 0)->first();
-        return DB::transaction(function () use ($purchase, $quantity) {
-            return ($this->save() && $purchase->reduceStock($quantity));
+        return DB::transaction(function () use ($quantity) {
+            $purchases = $this->purchases()->orderBy('expired_on', 'asc')->where('stock', '>', 0)->get();
+            $purchases->each(function (Purchase $purchase) use (&$quantity) {
+                if ($quantity > 0)
+                    $quantity = $purchase->reduceStock($quantity, $this->pivot);
+            });
+
+            return $this->save();
         });
     }
+
+    public static function reverseStock(Collection $products)
+    {
+        $products->load(['item']);
+        return $products->each(function ($product) {
+            if ($product->item->type == ItemType::STOCKED->value) {
+                $product->pivot->purchases->load(['purchasable']);
+                $product->pivot->purchases->each(function ($purchase) {
+                    $purchase->stock += $purchase->pivot->quantity;
+                    $purchase->save();
+                    $product = $purchase->purchasable;
+                    $product->stock += $purchase->pivot->quantity;
+                    $product->save();
+                    $purchase->pivot->delete();
+                });
+            }
+        });
+    }
+
 
     public function scopeFilter(Builder $query, array $filters)
     {
