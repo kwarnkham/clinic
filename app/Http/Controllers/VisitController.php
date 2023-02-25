@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\ItemType;
 use App\Enums\ResponseStatus;
 use App\Enums\VisitStatus;
 use App\Models\Product;
@@ -10,6 +9,7 @@ use App\Models\Visit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class VisitController extends Controller
 {
@@ -47,14 +47,19 @@ class VisitController extends Controller
 
     public function recordProduct(Request $request, Visit $visit): JsonResponse
     {
+        abort_if(
+            in_array($visit->status, [VisitStatus::CANCELED->value, VisitStatus::COMPLETED->value]),
+            ResponseStatus::BAD_REQUEST->value,
+            'Visit is completed or canceled'
+        );
         $data = $request->validate([
-            'products' => ['required', 'array'],
-            'products.*' => ['required', 'array'],
-            'products.*.id' => ['required', 'exists:products,id', 'distinct'],
-            'products.*.quantity' => ['required', 'numeric'],
+            'status' => ['required', 'numeric', 'in:' . VisitStatus::toString()],
+            'products' => ['array', Rule::requiredIf($request->status != 5)],
+            'products.*' => [Rule::requiredIf($request->status != 5), 'array'],
+            'products.*.id' => [Rule::requiredIf($request->status != 5), 'exists:products,id', 'distinct'],
+            'products.*.quantity' => [Rule::requiredIf($request->status != 5), 'numeric'],
             'products.*.discount' => ['nullable', 'numeric'],
             'discount' => ['sometimes', 'numeric', 'required'],
-            'status' => ['required', 'numeric', 'in:' . VisitStatus::toString()]
         ]);
 
         $products = Product::query()

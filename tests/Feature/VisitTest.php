@@ -135,7 +135,7 @@ class VisitTest extends TestCase
                     $products->reduce(fn ($carry, $v) => $carry + (($v->sale_price - $discount) * $quantity * 2), 0)) < 1
             );
 
-            $products->fresh()->load(['purchases'])->each(function ($product) use ($quantity) {
+            $products->fresh(['purchases'])->each(function ($product) use ($quantity) {
                 $this->assertEquals($product->stock, $quantity);
                 $this->assertEquals($product->purchases()->orderBy('expired_on', 'asc')->first()->stock, 0);
                 $this->assertEquals($product->purchases()->orderBy('expired_on', 'desc')->first()->stock, $quantity);
@@ -192,6 +192,38 @@ class VisitTest extends TestCase
             $purchase = $product->purchases()->orderBy('expired_on', 'asc')->first();
             if ($purchase)
                 $this->assertEquals($purchase->stock, 0);
+        });
+
+        //cancel the visit
+        $response = $this->actingAs($this->cashier)
+            ->postJson('api/visits/' . $visit->id . '/products', [
+                'products' => [],
+                'status' => VisitStatus::CANCELED->value,
+            ]);
+        $response->assertOk();
+        $this->assertEquals($visit->fresh()->status, VisitStatus::CANCELED->value);
+        $this->assertEquals($visit->products->count(), 0);
+        $this->assertDatabaseCount('product_visit_purchase', 0);
+        $this->assertDatabaseCount('product_visit', 0);
+
+        $this->assertEquals(
+            $product->fresh(['purchases'])->stock,
+            $product->purchases->reduce(fn ($carry, $p) => $carry + $p->stock, 0)
+        );
+        $this->assertEquals(
+            $product->fresh()->stock,
+            $product->purchases->reduce(fn ($carry, $p) => $carry + $p->quantity, 0)
+        );
+
+        $products->fresh(['purchases'])->each(function ($product) {
+            $this->assertEquals(
+                $product->fresh()->stock,
+                $product->purchases->reduce(fn ($carry, $p) => $carry + $p->stock, 0)
+            );
+            $this->assertEquals(
+                $product->fresh()->stock,
+                $product->purchases->reduce(fn ($carry, $p) => $carry + $p->quantity, 0)
+            );
         });
     }
 
