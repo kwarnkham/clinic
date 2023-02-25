@@ -23,6 +23,9 @@ class PurchaseController extends Controller
     public function cancel(Purchase $purchase)
     {
         abort_if($purchase->status == PurchaseStatus::CANCELED->value, ResponseStatus::BAD_REQUEST->value, 'Purchase has already been canceled');
+
+        abort_if($purchase->stock != $purchase->quantity, ResponseStatus::BAD_REQUEST->value, 'Cannot be canceled. Order exists');
+
         $purchase->status = PurchaseStatus::CANCELED->value;
         $purchase->save();
 

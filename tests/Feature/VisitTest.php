@@ -193,7 +193,6 @@ class VisitTest extends TestCase
             if ($purchase)
                 $this->assertEquals($purchase->stock, 0);
         });
-        dump(ProductVisit::with(['purchases'])->get()->toArray());
     }
 
     public function test_confirm_products_in_a_visit()
