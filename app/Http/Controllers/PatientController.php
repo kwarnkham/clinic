@@ -33,8 +33,12 @@ class PatientController extends Controller
 
     public function index()
     {
+        $filters = request()->validate([
+            'search' => ['sometimes', 'required']
+        ]);
+        $query = Patient::query()->latest('id')->filter($filters);
         return response()->json([
-            'data' => Patient::query()->latest('id')->paginate()
+            'data' => $query->paginate(request()->per_page ?? 20)
         ]);
     }
 }

@@ -12,6 +12,8 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    protected $with = ['roles'];
+
     public function roles()
     {
         return $this->belongsToMany(Role::class)->withTimestamps();
