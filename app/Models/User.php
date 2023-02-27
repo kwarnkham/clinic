@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -13,6 +15,18 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     protected $with = ['roles'];
+
+    public function scopeFilter(Builder $query, array $filters)
+    {
+        $query->when(
+            $filters['search'] ?? null,
+            fn (Builder $query, $search) => $query->where(function (Builder $query) use ($search) {
+                $query->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('username', 'like', '%' . $search . '%')
+                    ->orWhereRelation('roles', 'name', 'like', '%' . $search . '%');
+            })
+        );
+    }
 
     public function roles()
     {

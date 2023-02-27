@@ -5,6 +5,7 @@ use App\Http\Controllers\ItemController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PurchaseController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VisitController;
 use Illuminate\Support\Facades\Route;
@@ -65,6 +66,7 @@ Route::controller(UserController::class)->prefix('/users')->group(function () {
             Route::post('', 'store');
             Route::post('{user}/role', 'assignRole');
             Route::delete('{user}/role', 'removeRole');
+            Route::get('', 'index');
         });
         Route::get('token', 'checkToken');
     });
@@ -74,6 +76,12 @@ Route::controller(UserController::class)->prefix('/users')->group(function () {
 Route::controller(PatientController::class)->prefix('/patients')->group(function () {
     Route::middleware(['auth:sanctum', 'role:receptionist'])->group(function () {
         Route::post('', 'store');
+        Route::get('', 'index');
+    });
+});
+
+Route::controller(RoleController::class)->prefix('/roles')->group(function () {
+    Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
         Route::get('', 'index');
     });
 });

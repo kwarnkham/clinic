@@ -60,4 +60,9 @@ class UserTest extends TestCase
 
         $this->assertDatabaseMissing('role_user', ['user_id' => $user->id, 'role_id' => $role->id]);
     }
+
+    public function test_list_users(): void
+    {
+        $this->actingAs($this->admin)->getJson('api/users')->assertOk();
+    }
 }
