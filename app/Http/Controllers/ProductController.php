@@ -7,6 +7,7 @@ use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
 {
@@ -16,7 +17,7 @@ class ProductController extends Controller
             'item_id' => ['required', 'exists:items,id'],
             'name' => ['required', 'unique:products,name'],
             'description' => ['nullable'],
-            'sale_price' => ['required'],
+            'sale_price' => ['required', 'numeric'],
         ]);
         $product = Product::create($data);
         return response()->json([
@@ -74,5 +75,18 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         return response()->json(['product' => $product]);
+    }
+
+    public function update(Request $request, Product $product): JsonResponse
+    {
+        $product->update($request->validate([
+            'name' => ['required', Rule::unique('products', 'name')->ignore($product->id)],
+            'description' => ['nullable'],
+            'sale_price' => ['required', 'numeric'],
+        ]));
+
+        return response()->json([
+            'product' => $product
+        ]);
     }
 }

@@ -53,6 +53,7 @@ Route::controller(ProductController::class)->prefix('/products')->group(function
         Route::get('{product}', 'show');
         Route::get('', 'index');
         Route::post('{product}/purchase', 'purchase');
+        Route::put('{product}', 'update');
     });
 });
 

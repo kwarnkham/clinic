@@ -62,4 +62,16 @@ class ProductTest extends TestCase
     {
         $this->actingAs($this->admin)->getJson('api/products/search')->assertOk();
     }
+
+    public function test_update_product_info()
+    {
+        $product = Product::factory()->for(Item::factory())->create();
+        $productData = Product::factory()->make();
+        $this->actingAs($this->admin)->putJson(
+            'api/products/' . $product->id,
+            $productData->toArray()
+        )->assertOk();
+
+        $this->assertDatabaseHas('products', $productData->toArray());
+    }
 }
