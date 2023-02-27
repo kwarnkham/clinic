@@ -29,4 +29,24 @@ class AuthController extends Controller
         request()->user()->tokens()->delete();
         return response()->json(['message' => 'Logged out']);
     }
+
+    public function changePassword(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'password' => ['required'],
+            'new_password' => ['required', 'confirmed'],
+        ]);
+        $user = request()->user();
+        abort_unless(
+            Hash::check(
+                $data['password'],
+                $user->password
+            ),
+            ResponseStatus::BAD_REQUEST->value,
+            'Password is not correct'
+        );
+        $user->password = bcrypt($data['new_password']);
+        $user->save();
+        return response()->json(['message' => 'Success']);
+    }
 }

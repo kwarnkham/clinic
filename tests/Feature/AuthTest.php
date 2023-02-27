@@ -29,4 +29,22 @@ class AuthTest extends TestCase
         $this->actingAs($this->admin)->deleteJson('api/logout')->assertOk();
         $this->assertDatabaseCount('personal_access_tokens', 0);
     }
+
+    public function test_change_password()
+    {
+        $user = User::factory()->create();
+        $password = fake()->lastName();
+        $user = User::where('id', $user->id)->first();
+
+        $this->actingAs(User::where('id', $user->id)->first())->postJson('api/change-password', [
+            'password' => 'password',
+            'new_password' => $password,
+            'new_password_confirmation' => $password
+        ])->assertOk();
+
+        $this->actingAs($user)->postJson('api/login', [
+            'username' => $user->username,
+            'password' => $password
+        ])->assertOk();
+    }
 }
