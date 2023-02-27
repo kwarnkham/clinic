@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('description')->nullable();
             $table->double('sale_price');
             $table->double('last_purchase_price')->nullable();
-            $table->unsignedInteger('stock')->default(0);
+            $table->unsignedInteger('stock')->index()->default(0);
             $table->timestamps();
         });
     }

@@ -115,5 +115,10 @@ class Product extends Model
             $filters['limit'] ?? null,
             fn (Builder $query, $limit) => $query->take($limit)
         );
+
+        $query->when(
+            $filters['max_stock'] ?? null,
+            fn (Builder $query, $max_stock) => $query->where('stock', '<=', $max_stock)
+        );
     }
 }
