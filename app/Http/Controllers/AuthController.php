@@ -49,4 +49,11 @@ class AuthController extends Controller
         $user->save();
         return response()->json(['message' => 'Success']);
     }
+
+    public function resetPassword(User $user): JsonResponse
+    {
+        $user->password = bcrypt('password');
+        $user->save();
+        return response()->json(['message' => 'Success']);
+    }
 }

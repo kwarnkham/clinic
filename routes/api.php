@@ -28,6 +28,9 @@ Route::controller(AuthController::class)->group(function () {
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::delete('logout', 'logout');
         Route::post('change-password', 'changePassword');
+        Route::middleware(['role:admin'])->group(function () {
+            Route::post('users/{user}/reset-password', 'resetPassword');
+        });
     });
 });
 

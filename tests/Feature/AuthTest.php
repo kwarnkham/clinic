@@ -47,4 +47,29 @@ class AuthTest extends TestCase
             'password' => $password
         ])->assertOk();
     }
+
+    public function test_reset_password()
+    {
+        $user = User::factory()->create();
+        $password = fake()->lastName();
+        $user = User::where('id', $user->id)->first();
+
+        $this->actingAs(User::where('id', $user->id)->first())->postJson('api/change-password', [
+            'password' => 'password',
+            'new_password' => $password,
+            'new_password_confirmation' => $password
+        ])->assertOk();
+
+        $this->actingAs($user)->postJson('api/login', [
+            'username' => $user->username,
+            'password' => $password
+        ])->assertOk();
+
+        $this->actingAs($this->admin)->postJson('api/users/' . $user->id . '/reset-password')->assertOk();
+
+        $this->actingAs($user)->postJson('api/login', [
+            'username' => $user->username,
+            'password' => 'password'
+        ])->assertOk();
+    }
 }
