@@ -227,29 +227,6 @@ class VisitTest extends TestCase
         });
     }
 
-    public function test_confirm_products_in_a_visit()
-    {
-        $visit = Visit::factory()->for(Patient::factory())->create();
-        $response = $this->actingAs($this->pharmacist)->postJson('api/visits/' . $visit->id . '/confirm');
-        $response->assertOk();
-        $this->assertEquals($visit->fresh()->status, VisitStatus::CONFIRMED->value);
-    }
-
-    public function test_complete_a_visit()
-    {
-        $visit = Visit::factory()->for(Patient::factory())->create();
-        $response = $this->actingAs($this->cashier)->postJson('api/visits/' . $visit->id . '/complete');
-        $response->assertOk();
-        $this->assertEquals($visit->fresh()->status, VisitStatus::COMPLETED->value);
-    }
-
-    public function test_cancel_a_visit()
-    {
-        $visit = Visit::factory()->for(Patient::factory())->create();
-        $response = $this->actingAs($this->cashier)->postJson('api/visits/' . $visit->id . '/cancel');
-        $response->assertOk();
-        $this->assertEquals($visit->fresh()->status, VisitStatus::CANCELED->value);
-    }
 
     public function test_list_visits()
     {

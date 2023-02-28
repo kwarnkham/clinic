@@ -50,13 +50,18 @@ Route::controller(PurchaseController::class)->prefix('/purchases')->group(functi
 });
 
 Route::controller(ProductController::class)->prefix('/products')->group(function () {
-    Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
-        Route::post('', 'store');
-        Route::get('search', 'search');
-        Route::get('{product}', 'show');
-        Route::get('', 'index');
-        Route::post('{product}/purchase', 'purchase');
-        Route::put('{product}', 'update');
+
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::middleware(['role:cashier'])->group(function () {
+            Route::get('search', 'search');
+        });
+        Route::middleware(['role:admin'])->group(function () {
+            Route::post('', 'store');
+            Route::get('{product}', 'show');
+            Route::get('', 'index');
+            Route::post('{product}/purchase', 'purchase');
+            Route::put('{product}', 'update');
+        });
     });
 });
 
@@ -88,21 +93,10 @@ Route::controller(RoleController::class)->prefix('/roles')->group(function () {
 
 Route::controller(VisitController::class)->prefix('/visits')->group(function () {
     Route::middleware(['auth:sanctum'])->group(function () {
-        Route::middleware(['role:cashier'])->group(function () {
-            Route::post('{visit}/products', 'recordProduct');
-        });
-        Route::middleware(['role:pharmacist'])->group(function () {
-            Route::post('{visit}/confirm', 'confirmProduct');
-        });
-        Route::middleware(['role:cashier'])->group(function () {
-            Route::post('{visit}/complete', 'completeVisit');
-        });
-        Route::middleware(['role:cashier'])->group(function () {
-            Route::post('{visit}/cancel', 'cancelVisit');
-        });
         Route::middleware(['role:receptionist'])->group(function () {
             Route::post('', 'store');
         });
+        Route::post('{visit}/products', 'recordProduct');
         Route::get('', 'index');
         Route::get('{visit}', 'show');
     });

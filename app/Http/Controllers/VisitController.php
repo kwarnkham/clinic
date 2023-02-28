@@ -47,10 +47,40 @@ class VisitController extends Controller
 
     public function recordProduct(Request $request, Visit $visit): JsonResponse
     {
+        $user = $request->user();
+        abort_unless(
+            $user->roles->contains(fn ($role) => in_array($role->name, ['admin', 'cashier', 'pharmacist'])),
+            ResponseStatus::BAD_REQUEST->value,
+            'Action is not authorized'
+        );
         abort_if(
             in_array($visit->status, [VisitStatus::CANCELED->value, VisitStatus::COMPLETED->value]),
             ResponseStatus::BAD_REQUEST->value,
             'Visit is completed or canceled'
+        );
+        abort_if(
+            $request->status == VisitStatus::COMPLETED && $visit->status != VisitStatus::CONFIRMED->value,
+            ResponseStatus::BAD_REQUEST->value,
+            'Can only complete a confirmed visit'
+        );
+        abort_if(
+            $request->status == VisitStatus::CONFIRMED && $visit->status != VisitStatus::PRODUCTS_ADDED->value,
+            ResponseStatus::BAD_REQUEST->value,
+            'Can only confirm if cashier added products'
+        );
+        abort_if(
+            $request->status == VisitStatus::CONFIRMED->value && !$user->hasRole('pharmacist') && !$user->hasRole('admin'),
+            ResponseStatus::BAD_REQUEST->value,
+            'Action is not authorized'
+        );
+        abort_if(
+            in_array($request->status, [
+                VisitStatus::PRODUCTS_ADDED->value,
+                VisitStatus::COMPLETED->value,
+                VisitStatus::CANCELED->value,
+            ]) && !$user->hasRole('cashier') && !$user->hasRole('admin'),
+            ResponseStatus::BAD_REQUEST->value,
+            'Action is not authorized'
         );
         $data = $request->validate([
             'status' => ['required', 'numeric', 'in:' . VisitStatus::toString()],
