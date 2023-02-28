@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\ResponseStatus;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -41,6 +42,7 @@ class UserController extends Controller
                 'password' => bcrypt(('password'))
             ]
         );
+
         $user->roles()->attach($data['role_id']);
 
         return response()->json([
@@ -48,26 +50,29 @@ class UserController extends Controller
         ], ResponseStatus::CREATED->value);
     }
 
-    public function assignRole(Request $request, User $user)
+    public function toggleRole(Request $request, User $user)
     {
         $data = $request->validate([
             'role_id' => ['exists:roles,id']
         ]);
 
-        $user->roles()->attach($data['role_id']);
+        abort_if($data['role_id'] == 1, ResponseStatus::BAD_REQUEST->value, 'Cannot modify admin role');
+
+        $user->roles()->toggle($data['role_id']);
 
         return response()->json([
             'user' => $user->load(['roles'])
         ]);
     }
 
-    public function removeRole(Request $request, User $user)
+    public function update(Request $request, User $user)
     {
         $data = $request->validate([
-            'role_id' => ['exists:roles,id']
+            'username' => ['required', Rule::unique('users', 'username')->ignore($user->id)],
+            'name' => ['required']
         ]);
 
-        $user->roles()->detach($data['role_id']);
+        $user->update($data);
 
         return response()->json([
             'user' => $user->load(['roles'])

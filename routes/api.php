@@ -64,8 +64,8 @@ Route::controller(UserController::class)->prefix('/users')->group(function () {
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::middleware(['role:admin'])->group(function () {
             Route::post('', 'store');
-            Route::post('{user}/role', 'assignRole');
-            Route::delete('{user}/role', 'removeRole');
+            Route::put('{user}', 'update');
+            Route::post('{user}/role', 'toggleRole');
             Route::get('', 'index');
         });
         Route::get('token', 'checkToken');

@@ -35,7 +35,7 @@ class UserTest extends TestCase
         );
     }
 
-    public function test_assign_a_role_to_a_user()
+    public function test_toggle_role_of_a_user()
     {
         $user = User::factory()->create();
         $role = Role::latest()->first();
@@ -46,20 +46,23 @@ class UserTest extends TestCase
         )->assertOk();
 
         $this->assertDatabaseHas('role_user', ['user_id' => $user->id, 'role_id' => $role->id]);
-    }
 
-    public function test_remove_a_role_from_a_user()
-    {
-        $user = User::factory()->create();
-        $role = Role::latest()->first();
-
-        $this->actingAs($this->admin)->deleteJson(
+        $this->actingAs($this->admin)->postJson(
             'api/users/' . $user->id . '/role',
             ['role_id' => $role->id]
         )->assertOk();
 
         $this->assertDatabaseMissing('role_user', ['user_id' => $user->id, 'role_id' => $role->id]);
     }
+
+    public function test_update_user()
+    {
+        $user = User::factory()->create();
+        $userData = User::factory()->make();
+        $this->actingAs($this->admin)->putJson('api/users/' . $user->id, $userData->toArray())->assertOk();
+        $this->assertDatabaseHas('users', $userData->toArray());
+    }
+
 
     public function test_list_users(): void
     {
