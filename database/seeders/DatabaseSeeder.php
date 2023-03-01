@@ -9,6 +9,7 @@ use App\Models\Item;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
@@ -19,11 +20,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        $user = User::factory()->create([
-            'name' => 'admin',
-            'username' => 'admin',
-            'password' => bcrypt('password'),
+        $time = now();
+        DB::table('users')->insert([
+            [
+                'name' => 'admin',
+                'username' => 'admin',
+                'password' => bcrypt('password'),
+                'created_at' => $time,
+                'updated_at' => $time,
+            ]
         ]);
+        $user = User::first();
 
         $roles = ['admin', 'receptionist', 'cashier', 'pharmacist'];
 
