@@ -26,7 +26,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        Model::unguard(! App::isProduction());
+        Model::unguard();
         Model::preventAccessingMissingAttributes(! App::isProduction());
         Model::preventLazyLoading(! App::isProduction());
         Password::defaults(function () {
