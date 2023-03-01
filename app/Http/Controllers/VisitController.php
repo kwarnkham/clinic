@@ -21,7 +21,7 @@ class VisitController extends Controller
                 function (string $attribute, string $value, $fail) {
                     $statuses = explode(',', $value);
                     foreach ($statuses as $status) {
-                        if (! in_array($status, VisitStatus::toArray())) {
+                        if (!in_array($status, VisitStatus::toArray())) {
                             $fail("The {$attribute} is invalid.");
                         }
                     }
@@ -71,7 +71,7 @@ class VisitController extends Controller
             'Can only confirm if cashier added products'
         );
         abort_if(
-            $request->status == VisitStatus::CONFIRMED->value && ! $user->hasRole('pharmacist') && ! $user->hasRole('admin'),
+            $request->status == VisitStatus::CONFIRMED->value && !$user->hasRole('pharmacist') && !$user->hasRole('admin'),
             ResponseStatus::BAD_REQUEST->value,
             'Action is not authorized'
         );
@@ -80,12 +80,12 @@ class VisitController extends Controller
                 VisitStatus::PRODUCTS_ADDED->value,
                 VisitStatus::COMPLETED->value,
                 VisitStatus::CANCELED->value,
-            ]) && ! $user->hasRole('cashier') && ! $user->hasRole('admin'),
+            ]) && !$user->hasRole('cashier') && !$user->hasRole('admin'),
             ResponseStatus::BAD_REQUEST->value,
             'Action is not authorized'
         );
         $data = $request->validate([
-            'status' => ['required', 'numeric', 'in:'.VisitStatus::toString()],
+            'status' => ['required', 'numeric', 'in:' . VisitStatus::toString()],
             'products' => ['array', Rule::requiredIf($request->status != 5)],
             'products.*' => [Rule::requiredIf($request->status != 5), 'array'],
             'products.*.id' => [Rule::requiredIf($request->status != 5), 'exists:products,id', 'distinct'],

@@ -15,7 +15,7 @@ class VisitTest extends TestCase
     public function test_show_a_visit()
     {
         $visit = Visit::factory()->for(Patient::factory())->create();
-        $this->actingAs($this->admin)->getJson('api/visits/'.$visit->id)->assertOk();
+        $this->actingAs($this->admin)->getJson('api/visits/' . $visit->id)->assertOk();
     }
 
     public function test_record_a_visit()
@@ -111,7 +111,7 @@ class VisitTest extends TestCase
 
         for ($i = 0; $i < 2; $i++) {
             $response = $this->actingAs($this->cashier)
-                ->postJson('api/visits/'.$visit->id.'/products', [
+                ->postJson('api/visits/' . $visit->id . '/products', [
                     'products' => $productVisitData,
                     'discount' => $visitDiscount,
                     'status' => VisitStatus::PRODUCTS_ADDED->value,
@@ -171,7 +171,7 @@ class VisitTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->cashier)
-            ->postJson('api/visits/'.$visit->id.'/products', [
+            ->postJson('api/visits/' . $visit->id . '/products', [
                 'products' => $productVisitData,
                 'discount' => $visitDiscount,
                 'status' => VisitStatus::PRODUCTS_ADDED->value,
@@ -197,7 +197,7 @@ class VisitTest extends TestCase
 
         //cancel the visit
         $response = $this->actingAs($this->cashier)
-            ->postJson('api/visits/'.$visit->id.'/products', [
+            ->postJson('api/visits/' . $visit->id . '/products', [
                 'products' => [],
                 'status' => VisitStatus::CANCELED->value,
             ]);

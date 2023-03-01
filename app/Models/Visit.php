@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ItemType;
+use App\Events\VisitStatusUpdated;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,6 +13,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Visit extends Model
 {
     use HasFactory;
+
+    protected static function booted(): void
+    {
+        static::created(function (Visit $visit) {
+            VisitStatusUpdated::dispatch($visit);
+        });
+    }
 
     public function patient(): BelongsTo
     {

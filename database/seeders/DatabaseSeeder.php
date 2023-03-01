@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
                 'password' => bcrypt('password'),
                 'created_at' => $time,
                 'updated_at' => $time,
-            ]
+            ],
         ]);
         $user = User::first();
 
