@@ -7,13 +7,12 @@ use Tests\TestCase;
 
 class AuthTest extends TestCase
 {
-
     public function test_login(): void
     {
         $user = User::factory()->create();
         $this->postJson('api/login', [
             'username' => $user->username,
-            'password' => 'password'
+            'password' => 'password',
         ])->assertOk();
 
         $this->assertDatabaseCount('personal_access_tokens', 1);
@@ -39,12 +38,12 @@ class AuthTest extends TestCase
         $this->actingAs(User::where('id', $user->id)->first())->postJson('api/change-password', [
             'password' => 'password',
             'new_password' => $password,
-            'new_password_confirmation' => $password
+            'new_password_confirmation' => $password,
         ])->assertOk();
 
         $this->actingAs($user)->postJson('api/login', [
             'username' => $user->username,
-            'password' => $password
+            'password' => $password,
         ])->assertOk();
     }
 
@@ -57,19 +56,19 @@ class AuthTest extends TestCase
         $this->actingAs(User::where('id', $user->id)->first())->postJson('api/change-password', [
             'password' => 'password',
             'new_password' => $password,
-            'new_password_confirmation' => $password
+            'new_password_confirmation' => $password,
         ])->assertOk();
 
         $this->actingAs($user)->postJson('api/login', [
             'username' => $user->username,
-            'password' => $password
+            'password' => $password,
         ])->assertOk();
 
-        $this->actingAs($this->admin)->postJson('api/users/' . $user->id . '/reset-password')->assertOk();
+        $this->actingAs($this->admin)->postJson('api/users/'.$user->id.'/reset-password')->assertOk();
 
         $this->actingAs($user)->postJson('api/login', [
             'username' => $user->username,
-            'password' => 'password'
+            'password' => 'password',
         ])->assertOk();
     }
 }

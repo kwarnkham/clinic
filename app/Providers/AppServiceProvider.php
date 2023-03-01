@@ -26,9 +26,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        Model::unguard(!App::isProduction());
-        Model::preventAccessingMissingAttributes(!App::isProduction());
-        Model::preventLazyLoading(!App::isProduction());
+        Model::unguard(! App::isProduction());
+        Model::preventAccessingMissingAttributes(! App::isProduction());
+        Model::preventLazyLoading(! App::isProduction());
         Password::defaults(function () {
             $rule = Password::min(5);
 

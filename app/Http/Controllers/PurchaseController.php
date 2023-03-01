@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Enums\PurchaseStatus;
 use App\Enums\ResponseStatus;
 use App\Models\Purchase;
-use Illuminate\Http\Request;
 
 class PurchaseController extends Controller
 {
@@ -14,9 +13,10 @@ class PurchaseController extends Controller
         $filters = request()->validate([
             'search' => ['sometimes', 'required'],
             'purchasable_type' => ['sometimes', 'required'],
-            'purchasable_id' => ['sometimes', 'required']
+            'purchasable_id' => ['sometimes', 'required'],
         ]);
         $query = Purchase::query()->with(['purchasable'])->latest('id')->filter($filters);
+
         return response()->json(['data' => $query->paginate(request()->per_page ?? 20)]);
     }
 

@@ -13,8 +13,11 @@ abstract class TestCase extends BaseTestCase
     use CreatesApplication, RefreshDatabase;
 
     protected $admin;
+
     protected $recepitonist;
+
     protected $cashier;
+
     protected $pharmacist;
 
     public function setUp(): void

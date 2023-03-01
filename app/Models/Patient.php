@@ -18,15 +18,16 @@ class Patient extends Model
         if (is_null($latestPatient)) {
             $code = '1';
             while (strlen($code) < 7) {
-                $code = '0' . $code;
+                $code = '0'.$code;
             }
         } else {
-            $code = (int)substr($latestPatient->code, 5) + 1;
+            $code = (int) substr($latestPatient->code, 5) + 1;
             while (strlen($code) < 7) {
-                $code = '0' . $code;
+                $code = '0'.$code;
             }
         }
-        return 'CPI' . substr($year, 2) . $code;
+
+        return 'CPI'.substr($year, 2).$code;
     }
 
     public function visits()
@@ -39,7 +40,7 @@ class Patient extends Model
         $query->when(
             $filters['search'] ?? null,
             fn (Builder $query, $search) => $query->where(function (Builder $query) use ($search) {
-                $query->where('code', 'like', '%' . $search . '%');
+                $query->where('code', 'like', '%'.$search.'%');
             })
         );
     }

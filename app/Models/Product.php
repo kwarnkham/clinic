@@ -37,7 +37,7 @@ class Product extends Model
                 'sale_price',
                 'last_purchase_price',
                 'quantity',
-                'discount'
+                'discount',
             ]);
     }
 
@@ -48,7 +48,10 @@ class Product extends Model
 
     public function validateQuantity(int $quantity): bool
     {
-        if ($this->item->type == ItemType::NON_STOCKED->value) return true;
+        if ($this->item->type == ItemType::NON_STOCKED->value) {
+            return true;
+        }
+
         return $this->stock >= $quantity;
     }
 
@@ -58,18 +61,23 @@ class Product extends Model
         $productData['description'] = $this->description;
         $productData['sale_price'] = $this->sale_price;
         $productData['last_purchase_price'] = $this->last_purchase_price;
+
         return $productData;
     }
 
     public function reduceStock(int $quantity): bool
     {
-        if ($this->item->type == ItemType::NON_STOCKED->value) return true;
+        if ($this->item->type == ItemType::NON_STOCKED->value) {
+            return true;
+        }
         $this->stock -= $quantity;
+
         return DB::transaction(function () use ($quantity) {
             $purchases = $this->purchases()->orderBy('expired_on', 'asc')->where('stock', '>', 0)->get();
             $purchases->each(function (Purchase $purchase) use (&$quantity) {
-                if ($quantity > 0)
+                if ($quantity > 0) {
                     $quantity = $purchase->reduceStock($quantity, $this->pivot);
+                }
             });
 
             return $this->save();
@@ -79,6 +87,7 @@ class Product extends Model
     public static function reverseStock(Collection $products)
     {
         $products->load(['item']);
+
         return $products->each(function ($product) {
             if ($product->item->type == ItemType::STOCKED->value) {
                 $product->pivot->purchases->load(['purchasable']);
@@ -94,15 +103,14 @@ class Product extends Model
         });
     }
 
-
     public function scopeFilter(Builder $query, array $filters)
     {
         $query->when(
             $filters['search'] ?? null,
             fn (Builder $query, $search) => $query->where(function (Builder $query) use ($search) {
-                $query->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('description', 'like', '%' . $search . '%')
-                    ->orWhereRelation('item', 'name', 'like', '%' . $search . '%');
+                $query->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('description', 'like', '%'.$search.'%')
+                    ->orWhereRelation('item', 'name', 'like', '%'.$search.'%');
             })
         );
 

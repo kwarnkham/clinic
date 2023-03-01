@@ -22,7 +22,7 @@ class ProductVisit extends Pivot
         )
             ->withTimestamps()
             ->withPivot([
-                'quantity'
+                'quantity',
             ]);
     }
 }

@@ -23,7 +23,7 @@ class PatientFactory extends Factory
             'address' => fake()->address(),
             'phone' => fake()->phoneNumber(),
             'gender' => fake()->numberBetween(0, 1),
-            'code' => Patient::generateCode()
+            'code' => Patient::generateCode(),
         ];
     }
 }

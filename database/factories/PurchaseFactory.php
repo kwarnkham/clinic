@@ -17,11 +17,12 @@ class PurchaseFactory extends Factory
     public function definition(): array
     {
         $quantity = fake()->numberBetween(1, 10);
+
         return [
             'price' => fake()->numberBetween(1000, 10000),
             'expired_on' => fake()->date(),
             'quantity' => $quantity,
-            'stock' => $quantity
+            'stock' => $quantity,
         ];
     }
 }

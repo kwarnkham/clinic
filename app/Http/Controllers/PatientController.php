@@ -17,16 +17,18 @@ class PatientController extends Controller
             'gender' => ['required', 'boolean'],
             'phone' => ['nullable'],
             'address' => ['nullable'],
-            'with_book_fees' => ['boolean', 'nullable']
+            'with_book_fees' => ['boolean', 'nullable'],
         ]);
 
         $data['code'] = Patient::generateCode();
         $patient = Patient::create(collect($data)->except('with_book_fees')->toArray());
         $visit = $patient->visits()->create([
             'status' => VisitStatus::PENDING->value,
-            'amount' => 0
+            'amount' => 0,
         ]);
-        if (array_key_exists('with_book_fees', $data) && $data['with_book_fees']) $visit->addBookFees();
+        if (array_key_exists('with_book_fees', $data) && $data['with_book_fees']) {
+            $visit->addBookFees();
+        }
 
         return response()->json(['patient' => $patient], ResponseStatus::CREATED->value);
     }
@@ -34,11 +36,12 @@ class PatientController extends Controller
     public function index()
     {
         $filters = request()->validate([
-            'search' => ['sometimes', 'required']
+            'search' => ['sometimes', 'required'],
         ]);
         $query = Patient::query()->latest('id')->filter($filters);
+
         return response()->json([
-            'data' => $query->paginate(request()->per_page ?? 20)
+            'data' => $query->paginate(request()->per_page ?? 20),
         ]);
     }
 }

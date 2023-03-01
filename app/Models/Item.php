@@ -11,7 +11,6 @@ class Item extends Model
 {
     use HasFactory;
 
-
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);
@@ -22,8 +21,8 @@ class Item extends Model
         $query->when(
             $filters['search'] ?? null,
             fn (Builder $query, $search) => $query->where(function (Builder $query) use ($search) {
-                $query->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('description', 'like', '%' . $search . '%');
+                $query->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('description', 'like', '%'.$search.'%');
                 // ->orWhere('note', 'like', '%' . $search . '%')
                 // ->orWhere('price', 'like', '%' . $search . '%')
                 // ->orWhereRelation('item', 'name', 'like', '%' . $search . '%');

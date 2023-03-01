@@ -18,7 +18,7 @@ class UserTest extends TestCase
                 ...$userData->toArray(),
                 'password' => 'password',
                 'password_confirmation' => 'password',
-                'role_id' => $role->id
+                'role_id' => $role->id,
             ]);
             $response->assertCreated();
             $this->assertDatabaseHas('users', $userData->toArray());
@@ -41,14 +41,14 @@ class UserTest extends TestCase
         $role = Role::latest()->first();
 
         $this->actingAs($this->admin)->postJson(
-            'api/users/' . $user->id . '/role',
+            'api/users/'.$user->id.'/role',
             ['role_id' => $role->id]
         )->assertOk();
 
         $this->assertDatabaseHas('role_user', ['user_id' => $user->id, 'role_id' => $role->id]);
 
         $this->actingAs($this->admin)->postJson(
-            'api/users/' . $user->id . '/role',
+            'api/users/'.$user->id.'/role',
             ['role_id' => $role->id]
         )->assertOk();
 
@@ -59,10 +59,9 @@ class UserTest extends TestCase
     {
         $user = User::factory()->create();
         $userData = User::factory()->make();
-        $this->actingAs($this->admin)->putJson('api/users/' . $user->id, $userData->toArray())->assertOk();
+        $this->actingAs($this->admin)->putJson('api/users/'.$user->id, $userData->toArray())->assertOk();
         $this->assertDatabaseHas('users', $userData->toArray());
     }
-
 
     public function test_list_users(): void
     {

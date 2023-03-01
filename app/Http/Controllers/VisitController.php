@@ -21,14 +21,15 @@ class VisitController extends Controller
                 function (string $attribute, string $value, $fail) {
                     $statuses = explode(',', $value);
                     foreach ($statuses as $status) {
-                        if (!in_array($status, VisitStatus::toArray())) {
+                        if (! in_array($status, VisitStatus::toArray())) {
                             $fail("The {$attribute} is invalid.");
                         }
                     }
-                }
-            ]
+                },
+            ],
         ]);
         $query = Visit::query()->latest('id')->with(['patient'])->filter($filters);
+
         return response()->json(['data' => $query->paginate(request()->per_page ?? 20)]);
     }
 
@@ -36,12 +37,13 @@ class VisitController extends Controller
     {
         $data = $request->validate([
             'patient_id' => ['required', 'exists:patients,id'],
-            'with_book_fees' => ['sometimes', 'boolean']
+            'with_book_fees' => ['sometimes', 'boolean'],
         ]);
         $visit = Visit::create(collect($data)->except('with_book_fees')->toArray());
         if (array_key_exists('with_book_fees', $data) && $data['with_book_fees']) {
             $visit->addBookFees();
         }
+
         return response()->json(['visit' => $visit]);
     }
 
@@ -69,7 +71,7 @@ class VisitController extends Controller
             'Can only confirm if cashier added products'
         );
         abort_if(
-            $request->status == VisitStatus::CONFIRMED->value && !$user->hasRole('pharmacist') && !$user->hasRole('admin'),
+            $request->status == VisitStatus::CONFIRMED->value && ! $user->hasRole('pharmacist') && ! $user->hasRole('admin'),
             ResponseStatus::BAD_REQUEST->value,
             'Action is not authorized'
         );
@@ -78,12 +80,12 @@ class VisitController extends Controller
                 VisitStatus::PRODUCTS_ADDED->value,
                 VisitStatus::COMPLETED->value,
                 VisitStatus::CANCELED->value,
-            ]) && !$user->hasRole('cashier') && !$user->hasRole('admin'),
+            ]) && ! $user->hasRole('cashier') && ! $user->hasRole('admin'),
             ResponseStatus::BAD_REQUEST->value,
             'Action is not authorized'
         );
         $data = $request->validate([
-            'status' => ['required', 'numeric', 'in:' . VisitStatus::toString()],
+            'status' => ['required', 'numeric', 'in:'.VisitStatus::toString()],
             'products' => ['array', Rule::requiredIf($request->status != 5)],
             'products.*' => [Rule::requiredIf($request->status != 5), 'array'],
             'products.*.id' => [Rule::requiredIf($request->status != 5), 'exists:products,id', 'distinct'],
@@ -103,12 +105,13 @@ class VisitController extends Controller
         $data['products'] = array_map(function ($productData) use ($products, $visit) {
             $product = $products->first(fn ($v) => $v->id == $productData['id']);
 
-            if (array_key_exists('discount', $productData))
+            if (array_key_exists('discount', $productData)) {
                 abort_unless(
                     $product->validateDiscount($productData['discount']),
                     ResponseStatus::BAD_REQUEST->value,
                     'Discount cannot be greater than the sale price'
                 );
+            }
 
             $existedProduct = $visit->products->first(fn ($val) => $val->id == $productData['id']);
             $existedQuantity = $existedProduct ? $existedProduct->pivot->quantity : 0;
@@ -146,8 +149,9 @@ class VisitController extends Controller
                 return (
                     ($productData['sale_price'] - ($productData['discount'] ?? 0)) * $productData['quantity']) + $carry;
             }, 0);
-            if (array_key_exists('discount', $data))
+            if (array_key_exists('discount', $data)) {
                 $visit->discount = $data['discount'];
+            }
             $visit->save();
         });
 
@@ -158,6 +162,7 @@ class VisitController extends Controller
     {
         $visit->status = VisitStatus::CONFIRMED->value;
         $visit->save();
+
         return response()->json(['visit' => $visit]);
     }
 
@@ -165,6 +170,7 @@ class VisitController extends Controller
     {
         $visit->status = VisitStatus::COMPLETED->value;
         $visit->save();
+
         return response()->json(['visit' => $visit]);
     }
 
@@ -172,13 +178,14 @@ class VisitController extends Controller
     {
         $visit->status = VisitStatus::CANCELED->value;
         $visit->save();
+
         return response()->json(['visit' => $visit]);
     }
 
     public function show(Visit $visit)
     {
         return response()->json([
-            'visit' => $visit->load(['products', 'patient'])
+            'visit' => $visit->load(['products', 'patient']),
         ]);
     }
 }

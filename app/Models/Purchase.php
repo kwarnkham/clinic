@@ -16,7 +16,7 @@ class Purchase extends Model
         return $this->belongsToMany(ProductVisit::class)
             ->withTimestamps()
             ->withPivot([
-                'quantity'
+                'quantity',
             ]);
     }
 
@@ -26,12 +26,14 @@ class Purchase extends Model
             $this->stock -= $quantity;
             $this->save();
             $productVisit->purchases()->attach([$this->id => ['quantity' => $quantity]]);
+
             return 0;
         } else {
             $stock = $this->stock;
             $this->stock = 0;
             $this->save();
             $productVisit->purchases()->attach([$this->id => ['quantity' => $stock]]);
+
             return $quantity - $stock;
         }
     }
@@ -46,7 +48,7 @@ class Purchase extends Model
         $query->when(
             $filters['search'] ?? null,
             fn (Builder $query, $search) => $query->where(function (Builder $query) use ($search) {
-                $query->orWhereRelation('purchasable', 'name', 'like', '%' . $search . '%');
+                $query->orWhereRelation('purchasable', 'name', 'like', '%'.$search.'%');
             })
         );
 

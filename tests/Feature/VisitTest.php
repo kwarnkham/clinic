@@ -12,17 +12,17 @@ use Tests\TestCase;
 
 class VisitTest extends TestCase
 {
-
     public function test_show_a_visit()
     {
         $visit = Visit::factory()->for(Patient::factory())->create();
-        $this->actingAs($this->admin)->getJson('api/visits/' . $visit->id)->assertOk();
+        $this->actingAs($this->admin)->getJson('api/visits/'.$visit->id)->assertOk();
     }
+
     public function test_record_a_visit()
     {
         $patient = Patient::factory()->create();
         $response = $this->actingAs($this->recepitonist)->postJson('api/visits', [
-            'patient_id' => $patient->id
+            'patient_id' => $patient->id,
         ]);
         $response->assertOk();
         $this->assertDatabaseCount('visits', 1);
@@ -34,7 +34,7 @@ class VisitTest extends TestCase
         $patient = Patient::factory()->create();
         $response = $this->actingAs($this->recepitonist)->postJson('api/visits', [
             'patient_id' => $patient->id,
-            'with_book_fees' => 1
+            'with_book_fees' => 1,
         ]);
         $response->assertOk();
         $this->assertDatabaseCount('visits', 1);
@@ -49,7 +49,7 @@ class VisitTest extends TestCase
         $patientData = Patient::factory()->make();
         $response = $this->actingAs($this->recepitonist)->postJson('api/patients', [
             ...$patientData->toArray(),
-            'with_book_fees' => 1
+            'with_book_fees' => 1,
         ]);
         $response->assertCreated();
 
@@ -80,7 +80,7 @@ class VisitTest extends TestCase
                 [
                     'quantity' => $quantity,
                     'price' => $purchase_price,
-                    'expired_on' => now()->addMonths(3)->format('Y-m-d')
+                    'expired_on' => now()->addMonths(3)->format('Y-m-d'),
                 ]
             );
             $this->actingAs($this->admin)->postJson(
@@ -88,7 +88,7 @@ class VisitTest extends TestCase
                 [
                     'quantity' => $quantity,
                     'price' => $purchase_price,
-                    'expired_on' => now()->addMonths(2)->format('Y-m-d')
+                    'expired_on' => now()->addMonths(2)->format('Y-m-d'),
                 ]
             );
             $this->actingAs($this->admin)->postJson(
@@ -96,7 +96,7 @@ class VisitTest extends TestCase
                 [
                     'quantity' => $quantity,
                     'price' => $purchase_price,
-                    'expired_on' => now()->addMonths(4)->format('Y-m-d')
+                    'expired_on' => now()->addMonths(4)->format('Y-m-d'),
                 ]
             );
         });
@@ -106,12 +106,12 @@ class VisitTest extends TestCase
         $productVisitData = $products->map(fn ($product) => [
             'id' => $product->id,
             'quantity' => $quantity * 2,
-            'discount' => $discount
+            'discount' => $discount,
         ])->values()->toArray();
 
         for ($i = 0; $i < 2; $i++) {
             $response = $this->actingAs($this->cashier)
-                ->postJson('api/visits/' . $visit->id . '/products', [
+                ->postJson('api/visits/'.$visit->id.'/products', [
                     'products' => $productVisitData,
                     'discount' => $visitDiscount,
                     'status' => VisitStatus::PRODUCTS_ADDED->value,
@@ -126,7 +126,7 @@ class VisitTest extends TestCase
                     'description',
                     'sale_price',
                     'latest_purchase_price',
-                ])->toArray(), 'quantity' => $quantity * 2, 'discount' => $discount
+                ])->toArray(), 'quantity' => $quantity * 2, 'discount' => $discount,
             ]);
             $this->assertDatabaseCount('product_visit_purchase', $products->count() * 2);
             $this->assertEquals(VisitStatus::PRODUCTS_ADDED->value, $visit->fresh()->status);
@@ -154,7 +154,7 @@ class VisitTest extends TestCase
             [
                 'quantity' => $quantity,
                 'price' => $purchase_price,
-                'expired_on' => now()->addMonths(3)->format('Y-m-d')
+                'expired_on' => now()->addMonths(3)->format('Y-m-d'),
             ]
         );
         $this->assertDatabaseCount('purchases', ($products->count() * 3) + 1);
@@ -162,7 +162,7 @@ class VisitTest extends TestCase
         $productVisitData = $products->map(fn ($product) => [
             'id' => $product->id,
             'quantity' => $quantity * 2,
-            'discount' => $discount
+            'discount' => $discount,
         ])->values()->toArray();
 
         array_push($productVisitData, [
@@ -171,7 +171,7 @@ class VisitTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->cashier)
-            ->postJson('api/visits/' . $visit->id . '/products', [
+            ->postJson('api/visits/'.$visit->id.'/products', [
                 'products' => $productVisitData,
                 'discount' => $visitDiscount,
                 'status' => VisitStatus::PRODUCTS_ADDED->value,
@@ -190,13 +190,14 @@ class VisitTest extends TestCase
         $this->assertEquals($product->fresh()->stock, 0);
         Product::with(['purchases'])->get()->each(function ($product) {
             $purchase = $product->purchases()->orderBy('expired_on', 'asc')->first();
-            if ($purchase)
+            if ($purchase) {
                 $this->assertEquals($purchase->stock, 0);
+            }
         });
 
         //cancel the visit
         $response = $this->actingAs($this->cashier)
-            ->postJson('api/visits/' . $visit->id . '/products', [
+            ->postJson('api/visits/'.$visit->id.'/products', [
                 'products' => [],
                 'status' => VisitStatus::CANCELED->value,
             ]);
@@ -226,7 +227,6 @@ class VisitTest extends TestCase
             );
         });
     }
-
 
     public function test_list_visits()
     {

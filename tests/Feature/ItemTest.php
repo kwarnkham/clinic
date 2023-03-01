@@ -26,7 +26,7 @@ class ItemTest extends TestCase
     {
         $item = Item::factory()->create();
         $updatedItem = Item::factory()->make();
-        $response = $this->actingAs($this->admin)->putJson('api/items/' . $item->id, $updatedItem->toArray());
+        $response = $this->actingAs($this->admin)->putJson('api/items/'.$item->id, $updatedItem->toArray());
         $response->assertOk();
 
         $this->assertDatabaseHas('items', $updatedItem->toArray());
@@ -35,7 +35,7 @@ class ItemTest extends TestCase
     public function test_show_an_item()
     {
         $item = Item::factory()->create();
-        $response = $this->actingAs($this->admin)->getJson('api/items/' . $item->id);
+        $response = $this->actingAs($this->admin)->getJson('api/items/'.$item->id);
         $response->assertOk();
     }
 }

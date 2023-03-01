@@ -20,8 +20,9 @@ class ProductController extends Controller
             'sale_price' => ['required', 'numeric'],
         ]);
         $product = Product::create($data);
+
         return response()->json([
-            'product' => $product->fresh()
+            'product' => $product->fresh(),
         ], ResponseStatus::CREATED->value);
     }
 
@@ -30,9 +31,10 @@ class ProductController extends Controller
         $filters = request()->validate([
             'search' => ['sometimes', 'required'],
             'item_id' => ['sometimes', 'exists:items,id'],
-            'max_stock' => ['sometimes', 'numeric', 'required']
+            'max_stock' => ['sometimes', 'numeric', 'required'],
         ]);
         $query = Product::query()->latest('id')->filter($filters);
+
         return response()->json(['data' => $query->paginate(request()->per_page ?? 20)]);
     }
 
@@ -40,9 +42,10 @@ class ProductController extends Controller
     {
         $filters = request()->validate([
             'search' => ['sometimes', 'required'],
-            'limit' => ['sometimes', 'required', 'numeric']
+            'limit' => ['sometimes', 'required', 'numeric'],
         ]);
         $query = Product::query()->filter($filters);
+
         return response()->json(['products' => $query->get()]);
     }
 
@@ -51,17 +54,18 @@ class ProductController extends Controller
         $data = $request->validate([
             'quantity' => ['required', 'numeric'],
             'price' => ['required', 'numeric'],
-            'expired_on' => ['nullable', 'date']
+            'expired_on' => ['nullable', 'date'],
         ]);
         $purchase = DB::transaction(function () use ($product, $data) {
             $purchase = $product->purchases()->create(
                 [
                     ...$data,
-                    'stock' => $data['quantity']
+                    'stock' => $data['quantity'],
                 ]
             );
             $product->stock += $data['quantity'];
             $product->save();
+
             return $purchase;
         });
 
@@ -87,7 +91,7 @@ class ProductController extends Controller
         ]));
 
         return response()->json([
-            'product' => $product
+            'product' => $product,
         ]);
     }
 }

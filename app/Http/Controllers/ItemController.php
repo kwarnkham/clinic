@@ -16,12 +16,12 @@ class ItemController extends Controller
     public function index(): JsonResponse
     {
         $filters = request()->validate([
-            'search' => ['sometimes', 'required']
+            'search' => ['sometimes', 'required'],
         ]);
         $query = Item::query()->latest('id')->filter($filters);
+
         return response()->json(['data' => $query->paginate(request()->per_page ?? 20)]);
     }
-
 
     /**
      * Store a newly created resource in storage.
@@ -30,9 +30,10 @@ class ItemController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'unique:items,name'],
-            'description' => ['nullable']
+            'description' => ['nullable'],
         ]);
         $item = Item::create($data);
+
         return response()->json(['item' => $item], ResponseStatus::CREATED->value);
     }
 
@@ -44,7 +45,6 @@ class ItemController extends Controller
         return response()->json(['item' => $item]);
     }
 
-
     /**
      * Update the specified resource in storage.
      */
@@ -52,9 +52,10 @@ class ItemController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', Rule::unique('items', 'name')->ignore($item->id)],
-            'description' => ['nullable']
+            'description' => ['nullable'],
         ]);
         $item->update($data);
+
         return response()->json(['item' => $item]);
     }
 

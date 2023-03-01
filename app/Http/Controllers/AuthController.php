@@ -18,15 +18,17 @@ class AuthController extends Controller
         ]);
 
         $user = User::where('username', $data['username'])->first();
-        abort_if(is_null($user) || !Hash::check($data['password'], $user->password), ResponseStatus::BAD_REQUEST->value, 'Invalid Info');
+        abort_if(is_null($user) || ! Hash::check($data['password'], $user->password), ResponseStatus::BAD_REQUEST->value, 'Invalid Info');
         $user->tokens()->delete();
         $token = $user->createToken('');
+
         return response()->json(['token' => $token->plainTextToken, 'user' => $user]);
     }
 
     public function logout(): JsonResponse
     {
         request()->user()->tokens()->delete();
+
         return response()->json(['message' => 'Logged out']);
     }
 
@@ -47,6 +49,7 @@ class AuthController extends Controller
         );
         $user->password = bcrypt($data['new_password']);
         $user->save();
+
         return response()->json(['message' => 'Success']);
     }
 
@@ -54,6 +57,7 @@ class AuthController extends Controller
     {
         $user->password = bcrypt('password');
         $user->save();
+
         return response()->json(['message' => 'Success']);
     }
 }

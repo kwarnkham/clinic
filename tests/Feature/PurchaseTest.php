@@ -27,8 +27,7 @@ class PurchaseTest extends TestCase
             'purchasable'
         )->create(['quantity' => $stock, 'stock' => $stock]);
 
-
-        $this->actingAs($this->admin)->postJson('api/purchases/' . $purchase->id . '/cancel')->assertOk();
+        $this->actingAs($this->admin)->postJson('api/purchases/'.$purchase->id.'/cancel')->assertOk();
 
         $this->assertEquals($purchase->fresh()->status, PurchaseStatus::CANCELED->value);
         $this->assertEquals(Product::latest('id')->first()->stock, 0);
@@ -47,7 +46,7 @@ class PurchaseTest extends TestCase
         )->create(['quantity' => $stock, 'stock' => $stock]);
         $purchase->stock = 0;
         $purchase->save();
-        $this->actingAs($this->admin)->postJson('api/purchases/' . $purchase->id . '/cancel')->assertBadRequest();
+        $this->actingAs($this->admin)->postJson('api/purchases/'.$purchase->id.'/cancel')->assertBadRequest();
         $this->assertNotEquals(Purchase::first()->status, PurchaseStatus::CANCELED->value);
     }
 }

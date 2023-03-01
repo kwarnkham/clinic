@@ -19,7 +19,7 @@ class VisitFactory extends Factory
     {
         return [
             'amount' => 0,
-            'status' => VisitStatus::PENDING->value
+            'status' => VisitStatus::PENDING->value,
         ];
     }
 }

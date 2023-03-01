@@ -31,7 +31,7 @@ class ProductTest extends TestCase
             "api/products/$product->id/purchase",
             [
                 'quantity' => $quantity,
-                'price' => $price
+                'price' => $price,
             ]
         );
         $response->assertCreated();
@@ -41,7 +41,7 @@ class ProductTest extends TestCase
             'stock' => $quantity,
             'price' => $price,
             'purchasable_id' => $product->id,
-            'purchasable_type' => Product::class
+            'purchasable_type' => Product::class,
         ]);
         $this->assertEquals($quantity, $product->fresh()->stock);
         $this->assertEquals($product->fresh()->last_purchase_price, Purchase::first()->price);
@@ -55,7 +55,7 @@ class ProductTest extends TestCase
     public function test_show_product()
     {
         $product = Product::factory()->for(Item::factory())->create();
-        $this->actingAs($this->admin)->getJson('api/products/' . $product->id)->assertOk();
+        $this->actingAs($this->admin)->getJson('api/products/'.$product->id)->assertOk();
     }
 
     public function test_search_product()
@@ -68,7 +68,7 @@ class ProductTest extends TestCase
         $product = Product::factory()->for(Item::factory())->create();
         $productData = Product::factory()->make();
         $this->actingAs($this->admin)->putJson(
-            'api/products/' . $product->id,
+            'api/products/'.$product->id,
             $productData->toArray()
         )->assertOk();
 

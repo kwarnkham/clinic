@@ -12,34 +12,34 @@ class UserController extends Controller
     public function checkToken()
     {
         return response()->json([
-            'user' => request()->user()
+            'user' => request()->user(),
         ]);
     }
 
     public function index()
     {
         $filters = request()->validate([
-            'search' => ['sometimes', 'required']
+            'search' => ['sometimes', 'required'],
         ]);
         $query = User::query()->latest('id')->filter($filters);
+
         return response()->json([
-            'data' => $query->paginate(request()->per_page ?? 20)
+            'data' => $query->paginate(request()->per_page ?? 20),
         ]);
     }
-
 
     public function store(Request $request)
     {
         $data = $request->validate([
             'name' => ['required'],
             'username' => ['required', 'unique:users,username'],
-            'role_id' => ['required', 'exists:roles,id']
+            'role_id' => ['required', 'exists:roles,id'],
         ]);
 
         $user = User::create(
             [
                 ...collect($data)->except('role_id')->toArray(),
-                'password' => bcrypt(('password'))
+                'password' => bcrypt(('password')),
             ]
         );
 
@@ -53,7 +53,7 @@ class UserController extends Controller
     public function toggleRole(Request $request, User $user)
     {
         $data = $request->validate([
-            'role_id' => ['exists:roles,id']
+            'role_id' => ['exists:roles,id'],
         ]);
 
         abort_if($data['role_id'] == 1, ResponseStatus::BAD_REQUEST->value, 'Cannot modify admin role');
@@ -61,7 +61,7 @@ class UserController extends Controller
         $user->roles()->toggle($data['role_id']);
 
         return response()->json([
-            'user' => $user->load(['roles'])
+            'user' => $user->load(['roles']),
         ]);
     }
 
@@ -69,13 +69,13 @@ class UserController extends Controller
     {
         $data = $request->validate([
             'username' => ['required', Rule::unique('users', 'username')->ignore($user->id)],
-            'name' => ['required']
+            'name' => ['required'],
         ]);
 
         $user->update($data);
 
         return response()->json([
-            'user' => $user->load(['roles'])
+            'user' => $user->load(['roles']),
         ]);
     }
 }

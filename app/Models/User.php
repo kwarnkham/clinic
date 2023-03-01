@@ -21,9 +21,9 @@ class User extends Authenticatable
         $query->when(
             $filters['search'] ?? null,
             fn (Builder $query, $search) => $query->where(function (Builder $query) use ($search) {
-                $query->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('username', 'like', '%' . $search . '%')
-                    ->orWhereRelation('roles', 'name', 'like', '%' . $search . '%');
+                $query->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('username', 'like', '%'.$search.'%')
+                    ->orWhereRelation('roles', 'name', 'like', '%'.$search.'%');
             })
         );
     }

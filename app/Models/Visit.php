@@ -29,8 +29,8 @@ class Visit extends Model
                 'sale_price',
                 'last_purchase_price',
                 'quantity',
-                'discount'
-            ])->using(ProductVisit::class);;
+                'discount',
+            ])->using(ProductVisit::class);
     }
 
     public function addBookFees()
@@ -44,7 +44,7 @@ class Visit extends Model
             'name' => $product->name,
             'description' => $product->description,
             'sale_price' => $product->sale_price,
-            'quantity' => 1
+            'quantity' => 1,
         ]);
 
         $this->amount += $product->sale_price;

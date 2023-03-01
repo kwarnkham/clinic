@@ -18,7 +18,7 @@ class ItemFactory extends Factory
     {
         return [
             'name' => fake()->unique()->name(),
-            'description' => fake()->sentence()
+            'description' => fake()->sentence(),
         ];
     }
 }

@@ -34,7 +34,7 @@ class PatientTest extends TestCase
         $patientData = Patient::factory()->make();
         $response = $this->actingAs($this->recepitonist)->postJson('api/patients', [
             ...$patientData->toArray(),
-            'with_book_fees' => 1
+            'with_book_fees' => 1,
         ]);
         $response->assertCreated();
         $this->assertDatabaseCount('visits', 1);
@@ -42,7 +42,6 @@ class PatientTest extends TestCase
         $this->assertDatabaseCount('product_visit', 1);
         $this->assertEquals(Visit::first()->amount, Product::first()->sale_price);
     }
-
 
     public function test_list_patients()
     {
