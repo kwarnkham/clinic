@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ItemType;
-use App\Events\VisitStatusUpdated;
+use App\Events\VisitCreated;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -17,7 +17,7 @@ class Visit extends Model
     protected static function booted(): void
     {
         static::created(function (Visit $visit) {
-            VisitStatusUpdated::dispatch($visit);
+            VisitCreated::dispatch($visit->load(['patient']));
         });
     }
 
