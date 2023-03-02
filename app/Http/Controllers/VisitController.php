@@ -6,6 +6,7 @@ use App\Enums\ResponseStatus;
 use App\Enums\VisitStatus;
 use App\Models\Product;
 use App\Models\Visit;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -28,7 +29,11 @@ class VisitController extends Controller
                 },
             ],
         ]);
-        $query = Visit::query()->latest('id')->with(['patient'])->filter($filters);
+        $query = Visit::query()
+            ->latest('id')
+            ->with(['patient'])
+            ->whereHas('patient', fn (Builder $q) => $q->whereNull('deleted_at'))
+            ->filter($filters);
 
         return response()->json(['data' => $query->paginate(request()->per_page ?? 20)]);
     }
@@ -39,6 +44,7 @@ class VisitController extends Controller
             'patient_id' => ['required', 'exists:patients,id'],
             'with_book_fees' => ['sometimes', 'boolean'],
         ]);
+        $data['status'] = VisitStatus::PENDING->value;
         $visit = Visit::create(collect($data)->except('with_book_fees')->toArray());
         if (array_key_exists('with_book_fees', $data) && $data['with_book_fees']) {
             $visit->addBookFees();

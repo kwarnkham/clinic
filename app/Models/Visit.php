@@ -3,6 +3,11 @@
 namespace App\Models;
 
 use App\Enums\ItemType;
+use App\Enums\VisitStatus;
+use App\Events\ProductAddedToVisit;
+use App\Events\VisitCanceled;
+use App\Events\VisitCompleted;
+use App\Events\VisitConfirmed;
 use App\Events\VisitCreated;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,7 +22,17 @@ class Visit extends Model
     protected static function booted(): void
     {
         static::created(function (Visit $visit) {
-            VisitCreated::dispatch($visit->load(['patient']));
+            VisitCreated::dispatch($visit->load(['patient', 'products']));
+        });
+
+        static::updated(function (Visit $visit) {
+            if ($visit->status == VisitStatus::PRODUCTS_ADDED->value)            ProductAddedToVisit::dispatch($visit->load(['patient', 'products']));
+            else if ($visit->status == VisitStatus::CONFIRMED->value)
+                VisitConfirmed::dispatch($visit->load(['patient', 'products']));
+            else if ($visit->status == VisitStatus::COMPLETED->value)
+                VisitCompleted::dispatch($visit->load(['patient', 'products']));
+            else if ($visit->status == VisitStatus::CANCELED->value)
+                VisitCanceled::dispatch($visit->load(['patient', 'products']));
         });
     }
 
