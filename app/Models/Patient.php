@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Patient extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     public static function generateCode()
     {
@@ -18,16 +19,16 @@ class Patient extends Model
         if (is_null($latestPatient)) {
             $code = '1';
             while (strlen($code) < 7) {
-                $code = '0'.$code;
+                $code = '0' . $code;
             }
         } else {
             $code = (int) substr($latestPatient->code, 5) + 1;
             while (strlen($code) < 7) {
-                $code = '0'.$code;
+                $code = '0' . $code;
             }
         }
 
-        return 'CPI'.substr($year, 2).$code;
+        return 'CPI' . substr($year, 2) . $code;
     }
 
     public function visits()
@@ -40,7 +41,7 @@ class Patient extends Model
         $query->when(
             $filters['search'] ?? null,
             fn (Builder $query, $search) => $query->where(function (Builder $query) use ($search) {
-                $query->where('code', 'like', '%'.$search.'%');
+                $query->where('code', 'like', '%' . $search . '%');
             })
         );
     }

@@ -17,11 +17,13 @@ namespace App\Models{
  * @property int $id
  * @property string $name
  * @property string|null $description
+ * @property int $type
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Product> $products
  * @property-read int|null $products_count
  * @method static \Database\Factories\ItemFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder|Item filter(array $filters)
  * @method static \Illuminate\Database\Eloquent\Builder|Item newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Item newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Item query()
@@ -29,6 +31,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder|Item whereDescription($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Item whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Item whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Item whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Item whereUpdatedAt($value)
  */
 	class Item extends \Eloquent {}
@@ -50,8 +53,10 @@ namespace App\Models{
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Visit> $visits
  * @property-read int|null $visits_count
  * @method static \Database\Factories\PatientFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder|Patient filter(array $filters)
  * @method static \Illuminate\Database\Eloquent\Builder|Patient newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Patient newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Patient onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|Patient query()
  * @method static \Illuminate\Database\Eloquent\Builder|Patient whereAddress($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Patient whereAge($value)
@@ -62,6 +67,8 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder|Patient whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Patient wherePhone($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Patient whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Patient withTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|Patient withoutTrashed()
  */
 	class Patient extends \Eloquent {}
 }
@@ -85,6 +92,7 @@ namespace App\Models{
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Visit> $visits
  * @property-read int|null $visits_count
  * @method static \Database\Factories\ProductFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder|Product filter(array $filters)
  * @method static \Illuminate\Database\Eloquent\Builder|Product newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Product newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Product query()
@@ -103,27 +111,70 @@ namespace App\Models{
 
 namespace App\Models{
 /**
+ * App\Models\ProductVisit
+ *
+ * @property int $id
+ * @property int $visit_id
+ * @property int $product_id
+ * @property string $name
+ * @property string|null $description
+ * @property float $sale_price
+ * @property float|null $last_purchase_price
+ * @property int $quantity
+ * @property float $discount
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Purchase> $purchases
+ * @property-read int|null $purchases_count
+ * @method static \Illuminate\Database\Eloquent\Builder|ProductVisit newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|ProductVisit newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|ProductVisit query()
+ * @method static \Illuminate\Database\Eloquent\Builder|ProductVisit whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProductVisit whereDescription($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProductVisit whereDiscount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProductVisit whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProductVisit whereLastPurchasePrice($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProductVisit whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProductVisit whereProductId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProductVisit whereQuantity($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProductVisit whereSalePrice($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProductVisit whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProductVisit whereVisitId($value)
+ */
+	class ProductVisit extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
  * App\Models\Purchase
  *
  * @property int $id
  * @property int $purchasable_id
  * @property string $purchasable_type
  * @property int $quantity
+ * @property int $stock
  * @property float $price
  * @property int $status
+ * @property string|null $expired_on
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProductVisit> $productVisits
+ * @property-read int|null $product_visits_count
+ * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $purchasable
  * @method static \Database\Factories\PurchaseFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder|Purchase filter(array $filters)
  * @method static \Illuminate\Database\Eloquent\Builder|Purchase newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Purchase newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Purchase query()
  * @method static \Illuminate\Database\Eloquent\Builder|Purchase whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Purchase whereExpiredOn($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Purchase whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Purchase wherePrice($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Purchase wherePurchasableId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Purchase wherePurchasableType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Purchase whereQuantity($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Purchase whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Purchase whereStock($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Purchase whereUpdatedAt($value)
  */
 	class Purchase extends \Eloquent {}
@@ -167,6 +218,7 @@ namespace App\Models{
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Laravel\Sanctum\PersonalAccessToken> $tokens
  * @property-read int|null $tokens_count
  * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder|User filter(array $filters)
  * @method static \Illuminate\Database\Eloquent\Builder|User newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|User newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|User query()
@@ -196,6 +248,7 @@ namespace App\Models{
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Product> $products
  * @property-read int|null $products_count
  * @method static \Database\Factories\VisitFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder|Visit filter(array $filters)
  * @method static \Illuminate\Database\Eloquent\Builder|Visit newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Visit newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Visit query()

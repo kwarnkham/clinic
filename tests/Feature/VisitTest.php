@@ -3,23 +3,28 @@
 namespace Tests\Feature;
 
 use App\Enums\VisitStatus;
+use App\Events\VisitCreated;
 use App\Models\Item;
 use App\Models\Patient;
 use App\Models\Product;
 use App\Models\ProductVisit;
 use App\Models\Visit;
+use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
 class VisitTest extends TestCase
 {
     public function test_show_a_visit()
     {
+        Event::fake([VisitCreated::class]);
         $visit = Visit::factory()->for(Patient::factory())->create();
         $this->actingAs($this->admin)->getJson('api/visits/' . $visit->id)->assertOk();
+        Event::assertDispatched(VisitCreated::class);
     }
 
     public function test_record_a_visit()
     {
+        Event::fake([VisitCreated::class]);
         $patient = Patient::factory()->create();
         $response = $this->actingAs($this->recepitonist)->postJson('api/visits', [
             'patient_id' => $patient->id,
@@ -27,10 +32,12 @@ class VisitTest extends TestCase
         $response->assertOk();
         $this->assertDatabaseCount('visits', 1);
         $this->assertDatabaseHas('visits', ['patient_id' => $patient->id]);
+        Event::assertDispatched(VisitCreated::class);
     }
 
     public function test_record_a_visit_with_book_fees()
     {
+        Event::fake([VisitCreated::class]);
         $patient = Patient::factory()->create();
         $response = $this->actingAs($this->recepitonist)->postJson('api/visits', [
             'patient_id' => $patient->id,
@@ -41,11 +48,13 @@ class VisitTest extends TestCase
         $this->assertDatabaseHas('visits', ['patient_id' => $patient->id]);
         $this->assertDatabaseCount('product_visit', 1);
         $this->assertEquals(Product::first()->sale_price, Visit::first()->amount);
+        Event::assertDispatched(VisitCreated::class);
     }
 
     public function test_add_products_to_a_visit(): void
     {
         //register a patient with book fees
+        Event::fake([VisitCreated::class]);
         $patientData = Patient::factory()->make();
         $response = $this->actingAs($this->recepitonist)->postJson('api/patients', [
             ...$patientData->toArray(),
@@ -56,6 +65,7 @@ class VisitTest extends TestCase
         $this->assertDatabaseCount('visits', 1);
         $this->assertDatabaseCount('patients', 1);
         $this->assertDatabaseCount('product_visit', 1);
+        Event::assertDispatched(VisitCreated::class);
 
         //prepare test data
         $visit = Visit::first();

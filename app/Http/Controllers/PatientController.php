@@ -44,4 +44,10 @@ class PatientController extends Controller
             'data' => $query->paginate(request()->per_page ?? 20),
         ]);
     }
+
+    public function delete(Patient $patient)
+    {
+        $patient->delete();
+        return response()->json(['message', 'Success']);
+    }
 }
