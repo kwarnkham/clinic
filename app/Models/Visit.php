@@ -45,7 +45,6 @@ class Visit extends Model
     {
         $product = Product::query()
             ->whereRelation('item', 'type', '=', ItemType::NON_STOCKED->value)
-            ->where('name', 'Record book')
             ->first();
 
         $this->products()->attach($product->id, [
