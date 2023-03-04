@@ -2,14 +2,34 @@
 
 namespace App\Models;
 
+use App\Enums\VisitStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class Patient extends Model
 {
     use HasFactory, SoftDeletes;
+
+    protected static function booted(): void
+    {
+        static::deleted(function (Patient $patient) {
+            $patient->visits()->with(['products'])
+                ->whereIn('status', [
+                    VisitStatus::PENDING->value,
+                    VisitStatus::PRODUCTS_ADDED->value,
+                    VisitStatus::CONFIRMED->value,
+                ])->get()->each(function ($visit) {
+                    DB::transaction(function () use ($visit) {
+                        $visit->status = VisitStatus::CANCELED->value;
+                        $visit->save();
+                        Product::reverseStock($visit->products);
+                    });
+                });
+        });
+    }
 
     public static function generateCode()
     {

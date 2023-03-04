@@ -4,8 +4,10 @@ namespace Tests\Feature;
 
 use App\Enums\VisitStatus;
 use App\Events\VisitCreated;
+use App\Models\Item;
 use App\Models\Patient;
 use App\Models\Product;
+use App\Models\Purchase;
 use App\Models\Visit;
 use Tests\TestCase;
 use Illuminate\Support\Facades\Event;
@@ -62,5 +64,33 @@ class PatientTest extends TestCase
         $patient = Patient::factory()->create();
         $this->actingAs($this->admin)->deleteJson('api/patients/' . $patient->id)->assertOk();
         $this->assertNotNull($patient->fresh()->deleted_at);
+    }
+
+    public function test_delete_a_patient_also_cancel_and_reverse_the_stock()
+    {
+        Product::factory()->for(Item::factory())->create();
+        $product = Product::first();
+        $this->actingAs($this->admin)->postJson('api/products/' . $product->id . '/purchase', [
+            'price' => 1000,
+            'quantity' => 1
+        ])->assertCreated();
+
+        $this->actingAs($this->admin)->postJson('api/patients', Patient::factory()->make()->toArray());
+        $this->assertDatabaseCount('patients', 1);
+        $this->assertDatabaseCount('visits', 1);
+
+        $visit = Visit::first();
+        $visit->products()->attach($product->id, [
+            'name' => 'name',
+            'sale_price' => 1000,
+            'quantity' => 1
+        ]);
+
+        $patient = Patient::first();
+        $this->actingAs($this->admin)->deleteJson('api/patients/' . $patient->id)->assertOk();
+
+        $this->assertNotNull($patient->fresh()->deleted_at);
+        $this->assertEquals($product->fresh()->stock, 1);
+        $this->assertEquals(Purchase::first()->stock, 1);
     }
 }
