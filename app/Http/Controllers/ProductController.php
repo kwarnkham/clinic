@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ItemType;
 use App\Enums\ResponseStatus;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
@@ -33,7 +34,7 @@ class ProductController extends Controller
             'item_id' => ['sometimes', 'exists:items,id'],
             'max_stock' => ['sometimes', 'numeric', 'required'],
         ]);
-        $query = Product::query()->latest('id')->filter($filters);
+        $query = Product::query()->latest('id')->filter($filters)->whereRelation('item', 'type', ItemType::STOCKED->value);
 
         return response()->json(['data' => $query->paginate(request()->per_page ?? 20)]);
     }
