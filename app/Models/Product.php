@@ -108,9 +108,9 @@ class Product extends Model
         $query->when(
             $filters['search'] ?? null,
             fn (Builder $query, $search) => $query->where(function (Builder $query) use ($search) {
-                $query->where('name', 'like', '%'.$search.'%')
-                    ->orWhere('description', 'like', '%'.$search.'%')
-                    ->orWhereRelation('item', 'name', 'like', '%'.$search.'%');
+                $query->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhereRelation('item', 'name', 'like', '%' . $search . '%');
             })
         );
 
@@ -124,9 +124,7 @@ class Product extends Model
             fn (Builder $query, $limit) => $query->take($limit)
         );
 
-        $query->when(
-            $filters['max_stock'] ?? null,
-            fn (Builder $query, $max_stock) => $query->where('stock', '<=', $max_stock)
-        );
+        if (array_key_exists('max_stock', $filters))
+            $query->where('stock', '<=', $filters['max_stock']);
     }
 }
