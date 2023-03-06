@@ -16,18 +16,23 @@ class Patient extends Model
     protected static function booted(): void
     {
         static::deleted(function (Patient $patient) {
-            $patient->visits()->with(['products'])
-                ->whereIn('status', [
-                    VisitStatus::PENDING->value,
-                    VisitStatus::PRODUCTS_ADDED->value,
-                    VisitStatus::CONFIRMED->value,
-                ])->get()->each(function ($visit) {
-                    DB::transaction(function () use ($visit) {
+            DB::transaction(function () use ($patient) {
+                $patient->code = null;
+                $patient->save();
+                $patient->visits()->with(['products'])
+                    ->whereIn('status', [
+                        VisitStatus::PENDING->value,
+                        VisitStatus::PRODUCTS_ADDED->value,
+                        VisitStatus::CONFIRMED->value,
+                    ])->get()->each(function ($visit) {
                         $visit->status = VisitStatus::CANCELED->value;
                         $visit->save();
                         Product::reverseStock($visit->products);
+                        $visit->products()->detach();
                     });
-                });
+            });
+            $patient->visits()->where('status', '!=', VisitStatus::COMPLETED->value)->delete();
+            if ($patient->visits()->where('status', VisitStatus::COMPLETED->value)->count() <= 0) $patient->withoutEvents(fn () => $patient->forceDelete());
         });
     }
 

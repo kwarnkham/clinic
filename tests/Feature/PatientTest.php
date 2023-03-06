@@ -63,10 +63,13 @@ class PatientTest extends TestCase
     {
         $patient = Patient::factory()->create();
         $this->actingAs($this->admin)->deleteJson('api/patients/' . $patient->id)->assertOk();
-        $this->assertNotNull($patient->fresh()->deleted_at);
+        $this->assertDatabaseCount('visits', 0);
+        $this->assertDatabaseCount('patients', 0);
+        $this->assertDatabaseCount('product_visit', 0);
+        $this->assertDatabaseCount('product_visit_purchase', 0);
     }
 
-    public function test_delete_a_patient_also_cancel_and_reverse_the_stock()
+    public function test_delete_a_patient_also_reverse_the_stock()
     {
         Product::factory()->for(Item::factory())->create();
         $product = Product::first();
@@ -89,7 +92,12 @@ class PatientTest extends TestCase
         $patient = Patient::first();
         $this->actingAs($this->admin)->deleteJson('api/patients/' . $patient->id)->assertOk();
 
-        $this->assertNotNull($patient->fresh()->deleted_at);
+        $this->assertDatabaseCount('patients', 0);
+        $this->assertDatabaseCount('visits', 0);
+        $this->assertDatabaseCount('patients', 0);
+        $this->assertDatabaseCount('product_visit', 0);
+        $this->assertDatabaseCount('product_visit_purchase', 0);
+
         $this->assertEquals($product->fresh()->stock, 1);
         $this->assertEquals(Purchase::first()->stock, 1);
     }

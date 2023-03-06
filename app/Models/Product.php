@@ -38,7 +38,7 @@ class Product extends Model
                 'last_purchase_price',
                 'quantity',
                 'discount',
-            ]);
+            ])->using(ProductVisit::class);;
     }
 
     public function validateDiscount(int|float $discount): bool
