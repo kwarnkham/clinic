@@ -22,17 +22,17 @@ class Visit extends Model
     protected static function booted(): void
     {
         static::created(function (Visit $visit) {
-            VisitCreated::dispatch($visit->load(['patient', 'products']));
+            VisitCreated::dispatch($visit);
         });
 
         static::updated(function (Visit $visit) {
-            if ($visit->status == VisitStatus::PRODUCTS_ADDED->value)            ProductAddedToVisit::dispatch($visit->load(['patient', 'products']));
+            if ($visit->status == VisitStatus::PRODUCTS_ADDED->value)            ProductAddedToVisit::dispatch($visit);
             else if ($visit->status == VisitStatus::CONFIRMED->value)
-                VisitConfirmed::dispatch($visit->load(['patient', 'products']));
+                VisitConfirmed::dispatch($visit);
             else if ($visit->status == VisitStatus::COMPLETED->value)
-                VisitCompleted::dispatch($visit->load(['patient', 'products']));
+                VisitCompleted::dispatch($visit);
             else if ($visit->status == VisitStatus::CANCELED->value)
-                VisitCanceled::dispatch($visit->load(['patient', 'products']));
+                VisitCanceled::dispatch($visit);
         });
     }
 
