@@ -77,9 +77,9 @@ class VisitController extends Controller
             'Can only confirm if cashier added products'
         );
         abort_if(
-            $request->status == VisitStatus::CONFIRMED->value && !$user->hasRole('pharmacist') && !$user->hasRole('admin'),
+            $request->status == VisitStatus::CONFIRMED->value && !$user->hasRole('pharmacist') && !$user->hasRole('admin') && !$user->hasRole('cashier'),
             ResponseStatus::BAD_REQUEST->value,
-            'Action is not authorized,you are not pharmacist'
+            'Action is not authorized, you are not pharmacist or cashier'
         );
         abort_if(
             in_array($request->status, [
