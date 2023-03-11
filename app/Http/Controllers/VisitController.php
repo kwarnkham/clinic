@@ -59,7 +59,7 @@ class VisitController extends Controller
         abort_unless(
             $user->roles->contains(fn ($role) => in_array($role->name, ['admin', 'cashier', 'pharmacist'])),
             ResponseStatus::BAD_REQUEST->value,
-            'Action is not authorized'
+            'Action is not authorized, you are not cashier or pharmacist'
         );
         abort_if(
             in_array($visit->status, [VisitStatus::CANCELED->value, VisitStatus::COMPLETED->value]),
@@ -79,7 +79,7 @@ class VisitController extends Controller
         abort_if(
             $request->status == VisitStatus::CONFIRMED->value && !$user->hasRole('pharmacist') && !$user->hasRole('admin'),
             ResponseStatus::BAD_REQUEST->value,
-            'Action is not authorized'
+            'Action is not authorized,you are not pharmacist'
         );
         abort_if(
             in_array($request->status, [
@@ -88,7 +88,7 @@ class VisitController extends Controller
                 VisitStatus::CANCELED->value,
             ]) && !$user->hasRole('cashier') && !$user->hasRole('admin'),
             ResponseStatus::BAD_REQUEST->value,
-            'Action is not authorized'
+            'Action is not authorized, you are not cashier'
         );
         $data = $request->validate([
             'status' => ['required', 'numeric', 'in:' . VisitStatus::toString()],
