@@ -39,7 +39,7 @@ class Patient extends Model
     public static function generateCode()
     {
         $year = now()->year;
-        $latestPatient = static::query()->withTrashed()->whereYear('created_at', $year)->latest('id')->first();
+        $latestPatient = Patient::query()->withTrashed()->whereNotNull('code')->whereYear('created_at', $year)->latest('id')->first();
 
         if (is_null($latestPatient)) {
             $code = '1';
