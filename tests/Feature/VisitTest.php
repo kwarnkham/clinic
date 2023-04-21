@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Enums\VisitStatus;
+use App\Events\ProductAddedToVisit;
+use App\Events\VisitCanceled;
 use App\Events\VisitCreated;
 use App\Models\Item;
 use App\Models\Patient;
@@ -54,7 +56,7 @@ class VisitTest extends TestCase
     public function test_add_products_to_a_visit(): void
     {
         //register a patient with book fees
-        Event::fake([VisitCreated::class]);
+        Event::fake([VisitCreated::class, ProductAddedToVisit::class, VisitCanceled::class]);
         $patientData = Patient::factory()->make();
         $response = $this->actingAs($this->recepitonist)->postJson('api/patients', [
             ...$patientData->toArray(),
@@ -65,7 +67,6 @@ class VisitTest extends TestCase
         $this->assertDatabaseCount('visits', 1);
         $this->assertDatabaseCount('patients', 1);
         $this->assertDatabaseCount('product_visit', 1);
-        Event::assertDispatched(VisitCreated::class);
 
         //prepare test data
         $visit = Visit::first();
@@ -75,6 +76,7 @@ class VisitTest extends TestCase
         $sale_price = $purchase_price + $purchase_price * 0.2;
         $discount = $sale_price * 0.1;
         $visitDiscount = rand(1, 5);
+        Event::assertDispatched(VisitCreated::class);
 
         // all products are at stock zero
         $products = Product::factory($count)
@@ -151,7 +153,7 @@ class VisitTest extends TestCase
                 $this->assertEquals($product->purchases()->orderBy('expired_on', 'desc')->first()->stock, $quantity);
             });
         }
-
+        Event::assertDispatched(ProductAddedToVisit::class);
         // add a new product
         $product = Product::factory()
             ->for(Item::factory())
@@ -212,6 +214,7 @@ class VisitTest extends TestCase
                 'status' => VisitStatus::CANCELED->value,
             ]);
         $response->assertOk();
+        Event::assertDispatched(VisitCanceled::class);
         $this->assertEquals($visit->fresh()->status, VisitStatus::CANCELED->value);
         $this->assertEquals($visit->products->count(), 0);
         $this->assertDatabaseCount('product_visit_purchase', 0);

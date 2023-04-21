@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\VisitStatus;
+use App\Events\VisitCanceled;
 use App\Events\VisitCreated;
 use App\Models\Item;
 use App\Models\Patient;
@@ -71,6 +72,7 @@ class PatientTest extends TestCase
 
     public function test_delete_a_patient_also_reverse_the_stock()
     {
+        Event::fake([VisitCanceled::class]);
         Product::factory()->for(Item::factory())->create();
         $product = Product::first();
         $this->actingAs($this->admin)->postJson('api/products/' . $product->id . '/purchase', [
@@ -100,5 +102,6 @@ class PatientTest extends TestCase
 
         $this->assertEquals($product->fresh()->stock, 1);
         $this->assertEquals(Purchase::first()->stock, 1);
+        Event::assertDispatched(VisitCanceled::class);
     }
 }
