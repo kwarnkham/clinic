@@ -167,7 +167,18 @@ class VisitController extends Controller
     public function show(Visit $visit)
     {
         return response()->json([
-            'visit' => $visit->load(['products', 'patient']),
+            'visit' => $visit->load(['products', 'patient', 'visitTypes']),
+        ]);
+    }
+
+    public function toggleType(Visit $visit)
+    {
+        $data = request()->validate([
+            'visit_type_id' => ['required', 'exists:visit_types,id']
+        ]);
+        $visit->visitTypes()->toggle($data['visit_type_id']);
+        return response()->json([
+            'visit' => $visit->load(['products', 'patient', 'visitTypes'])
         ]);
     }
 }

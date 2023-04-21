@@ -8,6 +8,7 @@ use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VisitController;
+use App\Http\Controllers\VisitTypeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -98,5 +99,15 @@ Route::controller(VisitController::class)->prefix('/visits')->group(function () 
         Route::post('{visit}/products', 'recordProduct');
         Route::get('', 'index');
         Route::get('{visit}', 'show');
+        Route::post('{visit}/toggle-type', 'toggleType');
+    });
+});
+
+Route::controller(VisitTypeController::class)->prefix('/visit-types')->group(function () {
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::middleware(['role:admin'])->group(function () {
+            Route::post('', 'store');
+        });
+        Route::get('', 'index');
     });
 });

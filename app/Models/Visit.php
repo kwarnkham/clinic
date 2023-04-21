@@ -41,6 +41,12 @@ class Visit extends Model
         return $this->belongsTo(Patient::class);
     }
 
+    public function visitTypes()
+    {
+        return $this->belongsToMany(VisitType::class, 'visit_and_type')
+            ->withTimestamps();
+    }
+
     public function products(): BelongsToMany
     {
         return $this->belongsToMany(Product::class)
