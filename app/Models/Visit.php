@@ -85,5 +85,10 @@ class Visit extends Model
             $filters['statuses'] ?? null,
             fn (Builder $query, $statuses) => $query->whereIn('status', explode(',', $statuses))
         );
+
+        $query->when(
+            $filters['type'] ?? null,
+            fn (Builder $query, $type) => $query->whereRelation('visitTypes', 'visit_type_id', $type)
+        );
     }
 }

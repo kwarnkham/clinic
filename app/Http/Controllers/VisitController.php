@@ -28,6 +28,9 @@ class VisitController extends Controller
                     }
                 },
             ],
+            'type' => [
+                'sometimes'
+            ]
         ]);
         $query = Visit::query()
             ->latest('id')
