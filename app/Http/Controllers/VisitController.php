@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Enums\ResponseStatus;
 use App\Enums\VisitStatus;
+use App\Models\FollowUp;
 use App\Models\Product;
 use App\Models\Visit;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
@@ -177,9 +179,26 @@ class VisitController extends Controller
     public function toggleType(Visit $visit)
     {
         $data = request()->validate([
-            'visit_type_id' => ['required', 'exists:visit_types,id']
+            'visit_type_id' => ['required', 'exists:visit_types,id'],
+            'from' => ['date']
         ]);
-        $visit->visitTypes()->toggle($data['visit_type_id']);
+
+        DB::transaction(function () use ($visit, $data) {
+            $visit->visitTypes()->toggle($data['visit_type_id']);
+            $followUps = FollowUp::where('visit_type_id', $data['visit_type_id'])->get();
+            if ($visit->visitTypes->contains(function ($visitType) use ($data) {
+                return $visitType->id == $data['visit_type_id'];
+            })) {
+
+                $visit->followUps()->attach($followUps->mapWithKeys(function ($followUp) use ($data) {
+                    $dueOn = (new Carbon($data['from']))->addDays($followUp->due_in_days);
+                    return [$followUp->id => ['due_on' => $dueOn, 'count_from' => $data['from']]];
+                }));
+            } else {
+                $visit->followUps()->detach($followUps->map(fn ($followUp) => $followUp->id)->toArray());
+            }
+        });
+
         return response()->json([
             'visit' => $visit->load(['products', 'patient', 'visitTypes'])
         ]);

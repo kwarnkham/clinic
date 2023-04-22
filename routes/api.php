@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\FollowUpController;
+use App\Http\Controllers\FollowUpVisitController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\ProductController;
@@ -111,5 +113,22 @@ Route::controller(VisitTypeController::class)->prefix('/visit-types')->group(fun
         });
         Route::get('', 'index');
         Route::get('{visitType}', 'show');
+    });
+});
+
+Route::controller(FollowUpController::class)->prefix('/follow-ups')->group(function () {
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::middleware(['role:admin'])->group(function () {
+            Route::post('', 'store');
+            Route::put('{followUp}', 'update');
+            Route::delete('{followUp}', 'destroy');
+        });
+    });
+});
+
+Route::controller(FollowUpVisitController::class)->prefix('/follow-up-visits')->group(function () {
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::get('', 'index');
+        Route::post('{followUpVisit}/finish', 'finish');
     });
 });

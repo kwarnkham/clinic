@@ -47,6 +47,14 @@ class Visit extends Model
             ->withTimestamps();
     }
 
+    public function followUps()
+    {
+        return $this->belongsToMany(FollowUp::class)
+            ->withPivot(['due_on', 'status'])
+            ->withTimestamps()
+            ->using(FollowUpVisit::class);
+    }
+
     public function products(): BelongsToMany
     {
         return $this->belongsToMany(Product::class)

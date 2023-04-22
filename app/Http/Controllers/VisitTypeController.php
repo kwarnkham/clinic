@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\VisitType;
-use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class VisitTypeController extends Controller
@@ -21,7 +20,7 @@ class VisitTypeController extends Controller
 
     public function show(VisitType $visitType)
     {
-        return response()->json(['visit_type' => $visitType]);
+        return response()->json(['visit_type' => $visitType->load(['followUps'])]);
     }
 
     public function update(VisitType $visitType)
