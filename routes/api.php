@@ -107,7 +107,9 @@ Route::controller(VisitTypeController::class)->prefix('/visit-types')->group(fun
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::middleware(['role:admin'])->group(function () {
             Route::post('', 'store');
+            Route::put('{visitType}', 'update');
         });
         Route::get('', 'index');
+        Route::get('{visitType}', 'show');
     });
 });

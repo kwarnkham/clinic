@@ -30,6 +30,13 @@ class DatabaseSeeder extends Seeder
                 'updated_at' => $time,
             ],
         ]);
+        DB::table('visit_types')->insert([
+            [
+                'name' => '1',
+                'created_at' => $time,
+                'updated_at' => $time,
+            ],
+        ]);
         $user = User::first();
 
         $roles = ['admin', 'receptionist', 'cashier', 'pharmacist'];
