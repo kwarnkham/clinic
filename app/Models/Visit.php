@@ -50,7 +50,7 @@ class Visit extends Model
     public function followUps()
     {
         return $this->belongsToMany(FollowUp::class)
-            ->withPivot(['due_on', 'status'])
+            ->withPivot(['due_on', 'status', 'count_from'])
             ->withTimestamps()
             ->using(FollowUpVisit::class);
     }

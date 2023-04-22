@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\FollowUp;
 use App\Models\FollowUpVisit;
+use App\Models\Visit;
 use App\Models\VisitType;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -17,8 +18,23 @@ class FollowUpController extends Controller
             'name' => ['required'],
             'due_in_days' => ['required', 'numeric']
         ]);
+        DB::transaction(function () use ($data) {
+            $followUp = FollowUp::create($data);
 
-        FollowUp::create($data);
+            $visits = Visit::query()
+                ->whereRelation('visitTypes', 'visit_type_id', $data['visit_type_id'])
+                ->with(['followUps'])->get();
+
+            $visits->each(function ($visit) use ($followUp) {
+                $visit->followUps()->attach([
+                    $followUp->id => [
+                        'due_on' => (new Carbon($visit->followUps->first()->pivot->count_from))->addDays($followUp->due_in_days),
+                        'count_from' => $visit->followUps->first()->pivot->count_from
+                    ]
+                ]);
+            });
+        });
+
 
         return response()->json([
             'visit_type' => VisitType::with(['followUps'])->find($data['visit_type_id'])

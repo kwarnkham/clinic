@@ -37,6 +37,10 @@ class VisitTypeController extends Controller
 
     public function index()
     {
-        return response()->json(['visit_types' => VisitType::all()]);
+        $filters = request()->validate([
+            'hasFollowUps' => ['boolean']
+        ]);
+        $query = VisitType::query()->filter($filters);
+        return response()->json(['visit_types' => $query->get()]);
     }
 }
