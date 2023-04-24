@@ -16,4 +16,9 @@ class FollowUp extends Model
             ->withTimestamps()
             ->using(FollowUpVisit::class);
     }
+
+    public function visitType()
+    {
+        return $this->belongsTo(VisitType::class);
+    }
 }

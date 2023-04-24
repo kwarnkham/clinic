@@ -19,8 +19,6 @@ php artisan down
 git pull
 composer install --optimize-autoloader --no-dev
 php artisan migrate --force
-npm i
-npm run build
 php artisan optimize && php artisan view:cache
 php artisan up
 systemctl restart nginx

@@ -67,6 +67,13 @@ class FollowUpController extends Controller
     public function destroy(FollowUp $followUp)
     {
         FollowUpVisit::where('follow_up_id', $followUp->id)->delete();
+        if (
+            FollowUp::where('visit_type_id', $followUp->visit_type_id)
+            ->where('id', '!=', $followUp->id)
+            ->count() == 0
+        ) {
+            VisitType::find($followUp->visit_type_id)->visits()->detach();
+        }
         $followUp->delete();
 
         return response()->json([

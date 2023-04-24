@@ -22,4 +22,10 @@ class VisitType extends Model
             fn (Builder $query) => $query->whereHas('followUps')
         );
     }
+
+    public function visits()
+    {
+        return $this->belongsToMany(Visit::class, 'visit_and_type')
+            ->withTimestamps();
+    }
 }
