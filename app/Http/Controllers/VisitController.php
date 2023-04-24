@@ -67,9 +67,17 @@ class VisitController extends Controller
             'Action is not authorized, you are not cashier or pharmacist'
         );
         abort_if(
-            in_array($visit->status, [VisitStatus::CANCELED->value, VisitStatus::COMPLETED->value]),
+            in_array($visit->status, [VisitStatus::CANCELED->value]),
             ResponseStatus::BAD_REQUEST->value,
-            'Visit is completed or canceled'
+            'Visit is canceled'
+        );
+        abort_if(
+            in_array($visit->status, [VisitStatus::COMPLETED->value])
+                && $user->roles->doesntContain(
+                    fn ($role) => $role->name == 'admin'
+                ),
+            ResponseStatus::BAD_REQUEST->value,
+            'Visit is completed or you are not an admin'
         );
         abort_if(
             $request->status == VisitStatus::COMPLETED && $visit->status != VisitStatus::CONFIRMED->value,
@@ -166,7 +174,7 @@ class VisitController extends Controller
             $visit->save();
         });
 
-        return response()->json(['visit' => $visit->load(['products', 'patient'])]);
+        return response()->json(['visit' => $visit->load(['products', 'patient', 'visitTypes'])]);
     }
 
     public function show(Visit $visit)
