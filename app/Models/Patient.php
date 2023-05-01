@@ -66,7 +66,8 @@ class Patient extends Model
         $query->when(
             $filters['search'] ?? null,
             fn (Builder $query, $search) => $query->where(function (Builder $query) use ($search) {
-                $query->where('code', 'like', '%' . $search . '%');
+                $query->where('code', 'like', '%' . $search . '%')
+                    ->orWhere('name', 'like', '%' . $search . '%');
             })
         );
     }
