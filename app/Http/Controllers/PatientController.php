@@ -48,6 +48,20 @@ class PatientController extends Controller
     public function delete(Patient $patient)
     {
         $patient->delete();
-        return response()->json(['message', 'Success']);
+        return response()->json(['message' => 'Success']);
+    }
+
+    public function update(Patient $patient)
+    {
+        $data = request()->validate([
+            'name' => ['required'],
+            'age' => ['required'],
+            'gender' => ['required', 'boolean'],
+            'phone' => ['nullable'],
+            'address' => ['nullable'],
+        ]);
+
+        $patient->update($data);
+        return response()->json(['patient' => $patient->fresh()]);
     }
 }

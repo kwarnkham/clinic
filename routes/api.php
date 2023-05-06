@@ -84,6 +84,7 @@ Route::controller(PatientController::class)->prefix('/patients')->group(function
         Route::post('', 'store');
         Route::get('', 'index');
         Route::delete('{patient}', 'delete');
+        Route::put('{patient}', 'update');
     });
 });
 
