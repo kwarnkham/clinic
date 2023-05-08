@@ -49,6 +49,7 @@ Route::controller(PurchaseController::class)->prefix('/purchases')->group(functi
     Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
         Route::get('', 'index');
         Route::post('{purchase}/cancel', 'cancel');
+        Route::get('/report', 'report');
     });
 });
 
@@ -59,6 +60,7 @@ Route::controller(ProductController::class)->prefix('/products')->group(function
         });
         Route::middleware(['role:admin'])->group(function () {
             Route::post('', 'store');
+            Route::get('/report', 'report');
             Route::get('{product}', 'show');
             Route::get('', 'index');
             Route::post('{product}/purchase', 'purchase');

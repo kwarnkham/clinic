@@ -6,6 +6,7 @@ use App\Enums\ItemType;
 use App\Enums\ResponseStatus;
 use App\Models\Item;
 use App\Models\Product;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -101,5 +102,14 @@ class ProductController extends Controller
         return response()->json([
             'product' => $product,
         ]);
+    }
+
+    public function report()
+    {
+        $data = DB::table('products')
+            ->select(['id', 'name', 'stock', 'last_purchase_price', 'sale_price'])
+            ->where('item_id', '!=', 1)
+            ->get();
+        return response()->json(['data' => $data]);
     }
 }
