@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ItemType;
+use App\Enums\PurchaseStatus;
 use App\Enums\ResponseStatus;
+use App\Enums\VisitStatus;
 use App\Models\Item;
 use App\Models\Product;
 use Illuminate\Database\Query\JoinClause;
@@ -106,10 +108,49 @@ class ProductController extends Controller
 
     public function report()
     {
+        $filters = request()->validate([
+            'from' => ['sometimes', 'required', 'date'],
+            'to' => ['sometimes', 'required', 'date']
+        ]);
         $data = DB::table('products')
-            ->select(['id', 'name', 'stock', 'last_purchase_price', 'sale_price'])
-            ->where('item_id', '!=', 1)
+            ->select(['id', 'name', 'last_purchase_price', 'sale_price', 'stock'])
             ->get();
+
+        $data->transform(function ($value) use ($filters) {
+            $purchases = DB::table('purchases')
+                ->where([
+                    ['status', '=', PurchaseStatus::NORMAL->value],
+                    ['updated_at', '>=', $filters['from']],
+                    ['updated_at', '<=', $filters['to']],
+                    ['purchasable_id', '=', $value->id],
+                    ['purchasable_type', '=', 'App\\Models\\Product'],
+                ])->select([
+                    DB::raw('SUM(price*quantity) as total_purchase_amount'),
+                    DB::raw('SUM(quantity) as total_purchase_quantity')
+                ])->first();
+
+            $value->total_purchase_amount = $purchases->total_purchase_amount;
+            $value->total_purchase_quantity = $purchases->total_purchase_quantity;
+
+            $sales = DB::table('product_visit')
+                ->join('visits', 'visits.id', '=', 'product_visit.visit_id')
+                ->where([
+                    ['visits.status', '=', VisitStatus::COMPLETED->value],
+                    ['product_visit.updated_at', '>=', $filters['from']],
+                    ['product_visit.updated_at', '<=', $filters['to']],
+                    ['product_visit.product_id', '=', $value->id],
+                ])->select([
+                    DB::raw('SUM((product_visit.sale_price-product_visit.discount)*product_visit.quantity) as total_sale_amount'),
+                    DB::raw('SUM(product_visit.quantity) as total_sale_quantity'),
+                ])->first();
+
+            $value->total_sale_amount = $sales->total_sale_amount;
+            $value->total_sale_quantity = $sales->total_sale_quantity;
+            $value->from = $filters['from'];
+            $value->to = $filters['to'];
+            return $value;
+        });
+
         return response()->json(['data' => $data]);
     }
 }

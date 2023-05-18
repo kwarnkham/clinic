@@ -103,8 +103,9 @@ Route::controller(VisitController::class)->prefix('/visits')->group(function () 
         });
         Route::post('{visit}/products', 'recordProduct');
         Route::get('', 'index');
-        Route::get('{visit}', 'show');
+        Route::get('{visit}', 'show')->where('visit', '[0-9]+');
         Route::post('{visit}/toggle-type', 'toggleType');
+        Route::get('report', 'report');
     });
 });
 

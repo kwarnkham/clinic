@@ -46,7 +46,6 @@ class PurchaseController extends Controller
         $data = DB::table('purchases')
             ->join('products', 'products.id', '=', 'purchases.purchasable_id')
             ->where([
-                ['purchases.purchasable_type', '=', 'App\\Models\\Product'],
                 ['purchases.created_at', '>=', $filters['from']],
                 ['purchases.created_at', '<=', $filters['to']],
             ])
@@ -54,11 +53,16 @@ class PurchaseController extends Controller
                 'purchases.id',
                 'products.name',
                 'purchases.quantity',
-                'purchases.stock',
                 'purchases.price',
                 'purchases.status',
-                'purchases.expired_on'
-            ])->where('item_id', '!=', 1)->get();
-        return response()->json(['data' => $data]);
+                'purchases.expired_on',
+                'purchases.purchasable_type',
+                DB::raw('purchases.quantity*purchases.price as amount')
+            ])->get();
+        return response()->json(['data' => $data->transform(function ($v) use ($filters) {
+            $v->from = $filters['from'];
+            $v->to = $filters['to'];
+            return $v;
+        })]);
     }
 }

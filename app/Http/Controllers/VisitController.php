@@ -16,6 +16,36 @@ use Illuminate\Validation\Rule;
 
 class VisitController extends Controller
 {
+    public function report()
+    {
+        $filters = request()->validate([
+            'from' => ['sometimes', 'required', 'date'],
+            'to' => ['sometimes', 'required', 'date']
+        ]);
+        $data = DB::table('product_visit')
+            ->select([
+                'id',
+                'visit_id',
+                'product_id',
+                'name',
+                'sale_price',
+                'quantity',
+                'discount',
+                'updated_at',
+                DB::raw('quantity * (sale_price-discount) as amount')
+            ])
+            ->where([
+                ['updated_at', '>=', $filters['from']],
+                ['updated_at', '<=', $filters['to']],
+            ])
+            ->get();
+        return response()->json(['data' => $data->transform(function ($v) use ($filters) {
+            $v->from = $filters['from'];
+            $v->to = $filters['to'];
+            return $v;
+        })]);
+    }
+
     public function index()
     {
         $filters = request()->validate([
