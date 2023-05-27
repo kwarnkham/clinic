@@ -19,9 +19,11 @@ php artisan down
 git pull
 composer install --optimize-autoloader --no-dev
 php artisan migrate --force
-php artisan optimize && php artisan view:cache
+php artisan optimize
 php artisan up
 systemctl restart nginx
+
+* * * * * cd /etc/nginx/html/clinic-api && php artisan schedule:run >> /dev/null 2>&1
 ```
 
 # Move server

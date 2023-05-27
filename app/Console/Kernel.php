@@ -27,6 +27,7 @@ class Kernel extends ConsoleKernel
             });
         })
             // ->everyMinute();
+            ->timezone('Asia/Yangon')
             ->dailyAt('02:30');
     }
 
