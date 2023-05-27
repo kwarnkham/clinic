@@ -109,48 +109,69 @@ class ProductController extends Controller
     public function report()
     {
         $filters = request()->validate([
-            'from' => ['sometimes', 'required', 'date'],
-            'to' => ['sometimes', 'required', 'date']
+            'date' => ['required', 'date']
         ]);
-        $data = DB::table('products')
-            ->select(['id', 'name', 'last_purchase_price', 'sale_price', 'stock'])
+        $data = DB::table('product_stock')
+            ->join('products', 'products.id', '=', 'product_stock.product_id')
+            ->whereDate('product_stock.updated_at', '=', $filters['date'])
+            ->select([
+                'product_stock.product_id',
+                'product_stock.stock',
+                'products.name',
+                'products.sale_price',
+                'products.last_purchase_price',
+                'products.description',
+                'product_stock.updated_at as date'
+            ])
             ->get();
-
-        $data->transform(function ($value) use ($filters) {
-            $purchases = DB::table('purchases')
-                ->where([
-                    ['status', '=', PurchaseStatus::NORMAL->value],
-                    ['updated_at', '>=', $filters['from']],
-                    ['updated_at', '<=', $filters['to']],
-                    ['purchasable_id', '=', $value->id],
-                    ['purchasable_type', '=', 'App\\Models\\Product'],
-                ])->select([
-                    DB::raw('SUM(price*quantity) as total_purchase_amount'),
-                    DB::raw('SUM(quantity) as total_purchase_quantity')
-                ])->first();
-
-            $value->total_purchase_amount = $purchases->total_purchase_amount;
-            $value->total_purchase_quantity = $purchases->total_purchase_quantity;
-
-            $sales = DB::table('product_visit')
-                ->join('visits', 'visits.id', '=', 'product_visit.visit_id')
-                ->where([
-                    ['visits.status', '=', VisitStatus::COMPLETED->value],
-                    ['product_visit.updated_at', '>=', $filters['from']],
-                    ['product_visit.updated_at', '<=', $filters['to']],
-                    ['product_visit.product_id', '=', $value->id],
-                ])->select([
-                    DB::raw('SUM((product_visit.sale_price-product_visit.discount)*product_visit.quantity) as total_sale_amount'),
-                    DB::raw('SUM(product_visit.quantity) as total_sale_quantity'),
-                ])->first();
-
-            $value->total_sale_amount = $sales->total_sale_amount;
-            $value->total_sale_quantity = $sales->total_sale_quantity;
-            $value->from = $filters['from'];
-            $value->to = $filters['to'];
-            return $value;
-        });
-
         return response()->json(['data' => $data]);
     }
+
+    // public function report()
+    // {
+    //     $filters = request()->validate([
+    //         'from' => ['sometimes', 'required', 'date'],
+    //         'to' => ['sometimes', 'required', 'date']
+    //     ]);
+    //     $data = DB::table('products')
+    //         ->select(['id', 'name', 'last_purchase_price', 'sale_price', 'stock'])
+    //         ->get();
+
+    //     $data->transform(function ($value) use ($filters) {
+    //         $purchases = DB::table('purchases')
+    //             ->where([
+    //                 ['status', '=', PurchaseStatus::NORMAL->value],
+    //                 ['purchasable_id', '=', $value->id],
+    //                 ['purchasable_type', '=', 'App\\Models\\Product'],
+    //             ])->whereDate('updated_at', '>=', $filters['from'])
+    //             ->whereDate('updated_at', '<=', $filters['to'])
+    //             ->select([
+    //                 DB::raw('SUM(price*quantity) as total_purchase_amount'),
+    //                 DB::raw('SUM(quantity) as total_purchase_quantity')
+    //             ])->first();
+
+    //         $value->total_purchase_amount = $purchases->total_purchase_amount;
+    //         $value->total_purchase_quantity = $purchases->total_purchase_quantity;
+
+    //         $sales = DB::table('product_visit')
+    //             ->join('visits', 'visits.id', '=', 'product_visit.visit_id')
+    //             ->where([
+    //                 ['visits.status', '=', VisitStatus::COMPLETED->value],
+    //                 ['product_visit.product_id', '=', $value->id],
+    //             ])->whereDate('product_visit.updated_at', '>=', $filters['from'])
+    //             ->whereDate('product_visit.updated_at', '<=', $filters['to'])
+    //             ->select([
+    //                 DB::raw('SUM((product_visit.sale_price-product_visit.discount)*product_visit.quantity) as total_sale_amount'),
+    //                 DB::raw('SUM(product_visit.quantity) as total_sale_quantity'),
+    //             ])->first();
+
+    //         $value->total_sale_amount = $sales->total_sale_amount;
+    //         $value->total_sale_quantity = $sales->total_sale_quantity;
+    //         $value->from = $filters['from'];
+    //         $value->to = $filters['to'];
+    //         return $value;
+    //     });
+
+    //     return response()->json(['data' => $data]);
+    // }
 }

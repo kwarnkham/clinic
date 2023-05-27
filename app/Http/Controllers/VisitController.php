@@ -34,10 +34,8 @@ class VisitController extends Controller
                 'updated_at',
                 DB::raw('quantity * (sale_price-discount) as amount')
             ])
-            ->where([
-                ['updated_at', '>=', $filters['from']],
-                ['updated_at', '<=', $filters['to']],
-            ])
+            ->whereDate('updated_at', '>=', $filters['from'])
+            ->whereDate('updated_at', '<=', $filters['to'])
             ->get();
         return response()->json(['data' => $data->transform(function ($v) use ($filters) {
             $v->from = $filters['from'];
@@ -62,7 +60,9 @@ class VisitController extends Controller
             ],
             'type' => [
                 'sometimes'
-            ]
+            ],
+            'from' => ['date'],
+            'to' => ['date'],
         ]);
         $query = Visit::query()
             ->latest('id')

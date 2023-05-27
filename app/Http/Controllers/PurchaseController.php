@@ -45,10 +45,8 @@ class PurchaseController extends Controller
         ]);
         $data = DB::table('purchases')
             ->join('products', 'products.id', '=', 'purchases.purchasable_id')
-            ->where([
-                ['purchases.created_at', '>=', $filters['from']],
-                ['purchases.created_at', '<=', $filters['to']],
-            ])
+            ->whereDate('purchases.created_at', '>=', $filters['from'])
+            ->whereDate('purchases.created_at', '<=', $filters['to'])
             ->select([
                 'purchases.id',
                 'products.name',

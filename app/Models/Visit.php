@@ -98,5 +98,15 @@ class Visit extends Model
             $filters['type'] ?? null,
             fn (Builder $query, $type) => $query->whereRelation('visitTypes', 'visit_type_id', $type)
         );
+
+        $query->when(
+            $filters['from'] ?? null,
+            fn (Builder $query, $from) => $query->whereDate('updated_at', '>=', $from)
+        );
+
+        $query->when(
+            $filters['to'] ?? null,
+            fn (Builder $query, $to) => $query->whereDate('updated_at', '<=', $to)
+        );
     }
 }

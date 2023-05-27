@@ -20,13 +20,13 @@ class Kernel extends ConsoleKernel
             DB::table('products')->where('item_id', '!=', 1)->orderBy('id')->lazy()->each(function ($product) use ($now) {
                 DB::table('product_stock')->insert([
                     'product_id' => $product->id,
-                    'name' => $product->name,
                     'stock' => $product->stock,
                     'created_at' => $now,
                     'updated_at' => $now
                 ]);
             });
         })
+            // ->everyMinute();
             ->dailyAt('02:30');
     }
 
