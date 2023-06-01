@@ -61,6 +61,7 @@ Route::controller(ProductController::class)->prefix('/products')->group(function
         Route::middleware(['role:admin'])->group(function () {
             Route::post('', 'store');
             Route::get('/report', 'report');
+            Route::get('/live-report', 'liveReport');
             Route::get('{product}', 'show');
             Route::get('', 'index');
             Route::post('{product}/purchase', 'purchase');

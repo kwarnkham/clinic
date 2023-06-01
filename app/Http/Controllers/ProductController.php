@@ -3,12 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ItemType;
-use App\Enums\PurchaseStatus;
 use App\Enums\ResponseStatus;
-use App\Enums\VisitStatus;
 use App\Models\Item;
 use App\Models\Product;
-use Illuminate\Database\Query\JoinClause;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -123,6 +120,22 @@ class ProductController extends Controller
                 'products.description',
                 'product_stock.updated_at as date'
             ])
+            ->get();
+        return response()->json(['data' => $data]);
+    }
+
+    public function liveReport()
+    {
+        $data = DB::table('products')
+            ->select([
+                'products.id',
+                'products.name',
+                'products.sale_price',
+                'products.last_purchase_price',
+                'products.description',
+                'products.stock',
+                'products.updated_at'
+            ])->where('item_id', '!=', 1)
             ->get();
         return response()->json(['data' => $data]);
     }
