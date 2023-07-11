@@ -4,6 +4,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class Kernel extends ConsoleKernel
@@ -16,7 +17,8 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->call(function () {
-            $now = now();
+
+            $now = now()->subHours(3);
             DB::table('products')->where('item_id', '!=', 1)->orderBy('id')->lazy()->each(function ($product) use ($now) {
                 DB::table('product_stock')->insert([
                     'product_id' => $product->id,
@@ -29,6 +31,10 @@ class Kernel extends ConsoleKernel
             // ->everyMinute();
             ->timezone('Asia/Yangon')
             ->dailyAt('02:30');
+
+        $schedule->call(function () {
+            DB::table('product_stock')->whereDate('created_at', '<', now()->startOfMonth())->delete();
+        })->timezone('Asia/Yangon')->monthlyOn(1, '03:00');
     }
 
     /**
