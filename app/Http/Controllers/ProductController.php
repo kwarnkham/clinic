@@ -35,7 +35,7 @@ class ProductController extends Controller
             'item_id' => ['sometimes', 'exists:items,id'],
             'max_stock' => ['sometimes', 'numeric', 'required'],
         ]);
-        $query = Product::query()->latest('id')->filter($filters);
+        $query = Product::query()->latest('updated_at')->filter($filters);
         if (
             !array_key_exists('item_id', $filters) ||
             (array_key_exists('item_id', $filters) && in_array($filters['item_id'], Item::query()->where('type', ItemType::STOCKED->value)->pluck('id')->toArray()))
